@@ -40,7 +40,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Yu Gothic',sa
 .field-group{margin-bottom:12px;}.field-group:last-child{margin-bottom:0;}
 .field-label{font-size:12px;color:var(--text2);margin-bottom:5px;font-weight:500;}
 select,input,textarea{font-family:inherit;font-size:15px;width:100%;background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;color:var(--text);-webkit-appearance:none;}
-select:focus,input:focus,textarea:focus{outline:2px solid var(--purple);border-color:transparent;}
 textarea{min-height:72px;resize:none;}
 .metric-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
 .metric{background:var(--bg2);border:0.5px solid var(--border2);border-radius:var(--radius);padding:14px;}
@@ -58,7 +57,7 @@ textarea{min-height:72px;resize:none;}
 .eval-name{font-size:15px;font-weight:600;margin-bottom:2px;}
 .eval-hint{font-size:12px;color:var(--text2);margin-bottom:10px;}
 .star-row{display:flex;gap:8px;}
-.star{font-size:36px;cursor:pointer;color:var(--border);line-height:1;-webkit-tap-highlight-color:transparent;transition:color .1s;}
+.star{font-size:36px;cursor:pointer;color:var(--border);line-height:1;-webkit-tap-highlight-color:transparent;}
 .star.on{color:var(--orange);}
 .score-bar{background:var(--purple-light);border-radius:var(--radius);padding:14px 16px;margin-bottom:10px;display:none;align-items:center;gap:14px;}
 .score-num{font-size:40px;font-weight:700;line-height:1;min-width:56px;color:var(--purple);}
@@ -84,6 +83,7 @@ textarea{min-height:72px;resize:none;}
 .photo-remove{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.55);border:none;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#fff;font-size:14px;}
 .primary-btn{width:100%;padding:16px;background:var(--purple);color:#fff;border:none;border-radius:var(--radius);font-size:16px;font-weight:600;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;margin-bottom:8px;}
 .primary-btn:active{background:var(--purple-dark);}
+.primary-btn:disabled{background:var(--border);color:var(--text2);}
 .hist-item{background:var(--bg2);border:0.5px solid var(--border2);border-radius:var(--radius);padding:12px 14px;margin-bottom:8px;}
 .hist-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;}
 .hist-name{font-size:14px;font-weight:600;}
@@ -120,10 +120,13 @@ textarea{min-height:72px;resize:none;}
 .err-msg{font-size:13px;color:var(--red);text-align:center;display:none;}
 .filter-row{display:flex;gap:8px;margin-bottom:12px;}
 .filter-row select{flex:1;}
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;z-index:999;display:none;white-space:nowrap;}
+.loading{text-align:center;padding:20px;color:var(--text2);font-size:14px;}
 </style>
 </head>
 <body>
 <div class="phone" id="app">
+<div class="toast" id="toast"></div>
 
 <!-- ログイン画面 -->
 <div id="screen-login">
@@ -230,21 +233,20 @@ textarea{min-height:72px;resize:none;}
         <span id="disp-office" style="color:var(--text2);"></span>　<span id="disp-name" style="font-weight:600;"></span>さん、お疲れ様です
       </div>
       <div class="metric-grid">
-        <div class="metric"><div class="metric-val">142</div><div class="metric-lbl">今月の評価件数</div></div>
-        <div class="metric"><div class="metric-val good">3.8</div><div class="metric-lbl">全社平均スコア</div></div>
-        <div class="metric"><div class="metric-val warn">12</div><div class="metric-lbl">要改善フラグ</div></div>
-        <div class="metric"><div class="metric-val">26/26</div><div class="metric-lbl">参加拠点</div></div>
+        <div class="metric"><div class="metric-val" id="stat-count">-</div><div class="metric-lbl">今月の評価件数</div></div>
+        <div class="metric"><div class="metric-val good" id="stat-avg">-</div><div class="metric-lbl">全社平均スコア</div></div>
+        <div class="metric"><div class="metric-val warn" id="stat-flags">-</div><div class="metric-lbl">要改善フラグ</div></div>
+        <div class="metric"><div class="metric-val">25/25</div><div class="metric-lbl">参加拠点</div></div>
       </div>
       <div class="card">
         <div class="card-title">評価項目別 平均スコア（全社）</div>
-        <div class="prog-row"><div class="prog-lbl">清潔感</div><div class="prog-track"><div class="prog-fill" style="width:82%;"></div></div><span style="font-size:13px;min-width:28px;">4.1</span></div>
-        <div class="prog-row"><div class="prog-lbl">外観・傷</div><div class="prog-track"><div class="prog-fill" style="width:70%;"></div></div><span style="font-size:13px;min-width:28px;">3.5</span></div>
-        <div class="prog-row"><div class="prog-lbl">付属品</div><div class="prog-track"><div class="prog-fill" style="width:66%;background:var(--red);"></div></div><span style="font-size:13px;min-width:28px;color:var(--red);">3.3</span></div>
-        <div class="prog-row"><div class="prog-lbl">梱包</div><div class="prog-track"><div class="prog-fill" style="width:74%;"></div></div><span style="font-size:13px;min-width:28px;">3.7</span></div>
+        <div class="prog-row"><div class="prog-lbl">清潔感</div><div class="prog-track"><div class="prog-fill" id="prog-clean" style="width:0%;"></div></div><span style="font-size:13px;min-width:28px;" id="val-clean">-</span></div>
+        <div class="prog-row"><div class="prog-lbl">外観・傷</div><div class="prog-track"><div class="prog-fill" id="prog-looks" style="width:0%;"></div></div><span style="font-size:13px;min-width:28px;" id="val-looks">-</span></div>
+        <div class="prog-row"><div class="prog-lbl">付属品</div><div class="prog-track"><div class="prog-fill" id="prog-parts" style="width:0%;background:var(--red);"></div></div><span style="font-size:13px;min-width:28px;color:var(--red);" id="val-parts">-</span></div>
+        <div class="prog-row"><div class="prog-lbl">梱包</div><div class="prog-track"><div class="prog-fill" id="prog-pack" style="width:0%;"></div></div><span style="font-size:13px;min-width:28px;" id="val-pack">-</span></div>
       </div>
-      <div style="font-size:13px;font-weight:600;color:var(--text2);margin:4px 0 8px;">⚠ 要注意の営業所</div>
-      <div class="hist-item"><div class="hist-top"><span class="hist-name">福岡営業所</span><span class="badge badge-bad">2.5</span></div><div class="hist-meta">外観の傷・汚れ — 先月比 ▼0.9</div></div>
-      <div class="hist-item"><div class="hist-top"><span class="hist-name">仙台営業所</span><span class="badge badge-mid">2.9</span></div><div class="hist-meta">クリーニング不十分 — 先月比 ▼0.6</div></div>
+      <div style="font-size:13px;font-weight:600;color:var(--text2);margin:4px 0 8px;">最近の評価</div>
+      <div id="recent-evals"><div class="loading">読み込み中...</div></div>
     </div>
 
     <!-- 入庫チェック -->
@@ -252,15 +254,15 @@ textarea{min-height:72px;resize:none;}
       <div id="check-success" class="success-overlay">
         <i class="ti ti-circle-check" style="font-size:64px;color:var(--green);"></i>
         <div style="font-size:20px;font-weight:700;text-align:center;">送信完了！</div>
-        <div style="font-size:14px;color:var(--text2);text-align:center;">送り元営業所へ通知しました</div>
+        <div style="font-size:14px;color:var(--text2);text-align:center;">Firestoreに保存しました</div>
         <div style="width:100%;margin-top:4px;">
           <div class="flow-box" style="margin-bottom:8px;">
-            <i class="ti ti-device-mobile" style="font-size:22px;color:var(--purple);flex-shrink:0;"></i>
-            <div><div style="font-size:13px;font-weight:600;">現場スタッフ（アプリ内通知）</div><div style="font-size:12px;color:var(--text2);" id="notif-to-app">送り元のアプリに届きます</div></div>
+            <i class="ti ti-database" style="font-size:22px;color:var(--purple);flex-shrink:0;"></i>
+            <div><div style="font-size:13px;font-weight:600;">Firebase Firestoreに保存</div><div style="font-size:12px;color:var(--text2);">全営業所からリアルタイムで確認可能</div></div>
           </div>
           <div class="flow-box">
             <i class="ti ti-mail" style="font-size:22px;color:var(--green);flex-shrink:0;"></i>
-            <div><div style="font-size:13px;font-weight:600;">所長へメール通知</div><div style="font-size:12px;color:var(--text2);" id="notif-to-mail">所長に詳細レポートを送信</div></div>
+            <div><div style="font-size:13px;font-weight:600;">所長へメール通知</div><div style="font-size:12px;color:var(--text2);" id="notif-to-mail">送り元の所長に詳細レポートを送信</div></div>
           </div>
         </div>
         <button class="primary-btn" style="margin-top:8px;margin-bottom:0;" onclick="resetCheck()">続けて入力する</button>
@@ -278,14 +280,15 @@ textarea{min-height:72px;resize:none;}
             <option>静岡営業所</option><option>名古屋営業所</option><option>滋賀営業所</option>
             <option>関西営業所</option><option>兵庫営業所</option><option>広島営業所</option>
             <option>四国営業所</option><option>福岡営業所</option><option>南九州営業所</option>
-            <option>SOKO PLUS千葉</option><option>SOKO PLUS奈良</option><option>SOKO PLUS岡山</option>
+            <option>SOKOPLUSいわき</option><option>SOKO PLUS千葉</option>
+            <option>SOKO PLUS奈良</option><option>SOKO PLUS岡山</option>
           </select>
         </div>
         <div class="field-group"><div class="field-label">カテゴリ</div>
-          <select><option>家具</option><option>家電</option><option>イベント用品</option><option>その他</option></select>
+          <select id="check-cat"><option>家具</option><option>家電</option><option>イベント用品</option><option>その他</option></select>
         </div>
         <div class="field-group"><div class="field-label">商品名 / 管理番号</div>
-          <input type="text" placeholder="例：冷蔵庫 80L  #A-042">
+          <input type="text" id="check-item" placeholder="例：冷蔵庫 80L  #A-042">
         </div>
       </div>
 
@@ -338,68 +341,55 @@ textarea{min-height:72px;resize:none;}
       </div>
 
       <div class="section-label">コメント（任意）</div>
-      <div class="card"><textarea placeholder="気になった点・状態メモなど"></textarea></div>
-      <button class="primary-btn" onclick="doSubmit()">評価を送信する</button>
+      <div class="card"><textarea id="check-comment" placeholder="気になった点・状態メモなど"></textarea></div>
+      <button class="primary-btn" id="submit-btn" onclick="doSubmit()">評価を送信する</button>
       <div style="height:8px;"></div>
     </div>
 
     <!-- 通知 -->
     <div class="page" id="pg-notif">
-      <div class="card" style="padding:0;overflow:hidden;">
-        <div class="notif-item">
-          <div class="notif-icon warn"><i class="ti ti-alert-triangle"></i></div>
-          <div><div class="notif-title">札幌営業所から評価が届きました</div><div class="notif-body">冷蔵庫 80L #A-042 — ★★☆☆☆・付属品欠品</div><div class="notif-time">5分前 · 所長にもメール送信済み</div></div>
-        </div>
-        <div class="notif-item">
-          <div class="notif-icon ok"><i class="ti ti-circle-check"></i></div>
-          <div><div class="notif-title">埼玉営業所から評価が届きました</div><div class="notif-body">ポップコーンマシン #P-07 — ★★★★★・良好</div><div class="notif-time">2時間前 · 所長にもメール送信済み</div></div>
-        </div>
-        <div class="notif-item">
-          <div class="notif-icon"><i class="ti ti-clipboard-check"></i></div>
-          <div><div class="notif-title">南関東営業所から評価が届きました</div><div class="notif-body">シングルベッド #B-23 — ★★★★☆</div><div class="notif-time">昨日 · 所長にもメール送信済み</div></div>
-        </div>
-      </div>
+      <div id="notif-list"><div class="loading">読み込み中...</div></div>
     </div>
 
     <!-- 履歴 -->
     <div class="page" id="pg-hist">
       <div class="filter-row">
-        <select><option>全営業所</option><option>札幌</option><option>仙台</option><option>福岡</option><option>東京</option><option>名古屋</option><option>関西</option></select>
-        <select><option>全スコア</option><option>★1-2</option><option>★3</option><option>★4-5</option></select>
+        <select id="hist-filter-office" onchange="loadHistory()">
+          <option value="">全営業所</option>
+          <option>札幌営業所</option><option>盛岡営業所</option><option>仙台営業所</option>
+          <option>いわき営業所</option><option>新潟営業所</option><option>北関東営業所</option>
+          <option>埼玉営業所</option><option>東関東営業所</option><option>東京営業所</option>
+          <option>西関東営業所</option><option>麻布営業所</option><option>南関東営業所</option>
+          <option>静岡営業所</option><option>名古屋営業所</option><option>滋賀営業所</option>
+          <option>関西営業所</option><option>兵庫営業所</option><option>広島営業所</option>
+          <option>四国営業所</option><option>福岡営業所</option><option>南九州営業所</option>
+        </select>
+        <select id="hist-filter-score" onchange="loadHistory()">
+          <option value="">全スコア</option>
+          <option value="low">★1-2（要注意）</option>
+          <option value="mid">★3（普通）</option>
+          <option value="high">★4-5（良好）</option>
+        </select>
       </div>
-      <div class="hist-item"><div class="hist-top"><span class="hist-name">折りたたみテーブル #T-18</span><span class="badge badge-mid">★★★</span></div><div class="hist-meta">福岡→麻布 · 家具 · 5/21 · 田中</div></div>
-      <div class="hist-item"><div class="hist-top"><span class="hist-name">冷蔵庫 80L #A-042</span><span class="badge badge-bad">★★</span></div><div class="hist-meta">札幌→仙台 · 家電 · 5/20 · 佐藤 · <span style="color:var(--red);">欠品</span></div></div>
-      <div class="hist-item"><div class="hist-top"><span class="hist-name">ポップコーンマシン #P-07</span><span class="badge badge-good">★★★★★</span></div><div class="hist-meta">埼玉→横浜 · イベント · 5/20 · 鈴木</div></div>
-      <div class="hist-item"><div class="hist-top"><span class="hist-name">シングルベッド #B-23</span><span class="badge badge-good">★★★★</span></div><div class="hist-meta">南関東→麻布 · 家具 · 5/19 · 田中</div></div>
-      <div class="hist-item"><div class="hist-top"><span class="hist-name">シーリングライト #L-09</span><span class="badge badge-mid">★★★</span></div><div class="hist-meta">仙台→東京 · 家電 · 5/18 · 渡辺 · <span style="color:#854F0B;">要修理</span></div></div>
+      <div id="hist-list"><div class="loading">読み込み中...</div></div>
     </div>
 
     <!-- ランキング -->
     <div class="page" id="pg-rank">
       <div style="font-size:12px;color:var(--text2);margin-bottom:10px;">直近30日 · 受取側からの評価平均</div>
-      <div class="rank-item"><div class="rank-num">1</div><div class="rank-info"><div class="rank-name">🥇 埼玉営業所</div><div class="rank-bar-wrap"><div class="rank-track"><div class="rank-fill" style="width:92%;background:var(--green);"></div></div><span style="font-size:13px;font-weight:600;color:var(--green);">4.6</span></div></div></div>
-      <div class="rank-item"><div class="rank-num">2</div><div class="rank-info"><div class="rank-name">🥈 南関東営業所</div><div class="rank-bar-wrap"><div class="rank-track"><div class="rank-fill" style="width:86%;background:var(--green);"></div></div><span style="font-size:13px;font-weight:600;color:var(--green);">4.3</span></div></div></div>
-      <div class="rank-item"><div class="rank-num">3</div><div class="rank-info"><div class="rank-name">🥉 麻布営業所</div><div class="rank-bar-wrap"><div class="rank-track"><div class="rank-fill" style="width:82%;background:var(--purple);"></div></div><span style="font-size:13px;font-weight:600;">4.1</span></div></div></div>
-      <div class="rank-item"><div class="rank-num">4</div><div class="rank-info"><div class="rank-name">名古屋営業所</div><div class="rank-bar-wrap"><div class="rank-track"><div class="rank-fill" style="width:78%;background:var(--purple);"></div></div><span style="font-size:13px;font-weight:600;">3.9</span></div></div></div>
-      <div class="rank-item"><div class="rank-num">5</div><div class="rank-info"><div class="rank-name">関西営業所</div><div class="rank-bar-wrap"><div class="rank-track"><div class="rank-fill" style="width:74%;background:var(--purple);"></div></div><span style="font-size:13px;font-weight:600;">3.7</span></div></div></div>
-      <div class="rank-item"><div class="rank-num" style="color:#854F0B;">24</div><div class="rank-info"><div class="rank-name">札幌営業所</div><div class="rank-bar-wrap"><div class="rank-track"><div class="rank-fill" style="width:62%;background:#854F0B;"></div></div><span style="font-size:13px;font-weight:600;color:#854F0B;">3.1</span></div></div></div>
-      <div class="rank-item"><div class="rank-num" style="color:#854F0B;">25</div><div class="rank-info"><div class="rank-name">仙台営業所</div><div class="rank-bar-wrap"><div class="rank-track"><div class="rank-fill" style="width:58%;background:#854F0B;"></div></div><span style="font-size:13px;font-weight:600;color:#854F0B;">2.9</span></div></div></div>
-      <div class="rank-item"><div class="rank-num" style="color:var(--red);">26</div><div class="rank-info"><div class="rank-name">福岡営業所</div><div class="rank-bar-wrap"><div class="rank-track"><div class="rank-fill" style="width:50%;background:var(--red);"></div></div><span style="font-size:13px;font-weight:600;color:var(--red);">2.5</span></div></div></div>
+      <div id="rank-list"><div class="loading">読み込み中...</div></div>
     </div>
 
     <!-- ナレッジ -->
     <div class="page" id="pg-knowledge">
       <div style="display:flex;gap:8px;margin-bottom:12px;">
-        <input type="text" placeholder="キーワードで検索..." style="flex:1;">
-        <button style="padding:0 16px;background:var(--purple);color:#fff;border:none;border-radius:var(--radius-sm);font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;"><i class="ti ti-plus"></i> 追加</button>
+        <input type="text" id="knowledge-search" placeholder="キーワードで検索..." style="flex:1;" oninput="filterKnowledge()">
+        <button style="padding:0 16px;background:var(--purple);color:#fff;border:none;border-radius:var(--radius-sm);font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;" onclick="showAddKnowledge()"><i class="ti ti-plus"></i> 追加</button>
       </div>
       <div style="font-size:12px;color:var(--text2);background:var(--bg3);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:12px;">
-        <i class="ti ti-bulb" style="vertical-align:-2px;margin-right:4px;"></i>付属品管理（平均3.3）のナレッジ追加を推奨しています
+        <i class="ti ti-bulb" style="vertical-align:-2px;margin-right:4px;"></i>付属品管理のナレッジ追加を推奨しています
       </div>
-      <div class="knowledge-item"><div class="knowledge-tag">家電 / 冷蔵庫</div><div class="knowledge-title">冷蔵庫の臭い取り・内部クリーニング手順</div><div class="knowledge-meta">埼玉営業所 · 2025/04/10 · 参考になった 18件</div></div>
-      <div class="knowledge-item"><div class="knowledge-tag">家具 / ベッド</div><div class="knowledge-title">折りたたみベッドのフレーム軋み対処法</div><div class="knowledge-meta">南関東営業所 · 2025/03/28 · 参考になった 12件</div></div>
-      <div class="knowledge-item"><div class="knowledge-tag">イベント用品</div><div class="knowledge-title">ポップコーンマシンの油汚れ除去チェックリスト</div><div class="knowledge-meta">麻布営業所 · 2025/05/01 · 参考になった 9件</div></div>
-      <div class="knowledge-item"><div class="knowledge-tag">共通 / 付属品</div><div class="knowledge-title">付属品管理・チェックリスト標準テンプレート</div><div class="knowledge-meta">本部 · 2025/02/15 · 参考になった 34件</div></div>
+      <div id="knowledge-list"><div class="loading">読み込み中...</div></div>
     </div>
 
   </div>
@@ -407,14 +397,49 @@ textarea{min-height:72px;resize:none;}
   <div class="bottomnav">
     <button class="nav-btn active" id="nav-home" onclick="switchPage('home',this,'ダッシュボード','')"><i class="ti ti-layout-dashboard"></i>ホーム</button>
     <button class="nav-btn" id="nav-check" onclick="switchPage('check',this,'入庫チェック','商品を受け取ったとき')"><i class="ti ti-clipboard-check"></i>入庫</button>
-    <button class="nav-btn" id="nav-notif" onclick="switchPage('notif',this,'通知','評価結果の受信ボックス');clearNotif()" style="position:relative;"><i class="ti ti-bell"></i><div class="nav-dot" id="nav-notif-dot"></div>通知</button>
-    <button class="nav-btn" id="nav-hist" onclick="switchPage('hist',this,'評価履歴','過去の入庫評価')"><i class="ti ti-list"></i>履歴</button>
-    <button class="nav-btn" id="nav-rank" onclick="switchPage('rank',this,'ランキング','営業所別スコア')"><i class="ti ti-medal"></i>順位</button>
-    <button class="nav-btn" id="nav-knowledge" onclick="switchPage('knowledge',this,'ナレッジベース','メンテナンスノウハウ共有')"><i class="ti ti-book"></i>ナレッジ</button>
+    <button class="nav-btn" id="nav-notif" onclick="switchPage('notif',this,'通知','評価結果の受信ボックス');clearNotif();loadNotifications()" style="position:relative;"><i class="ti ti-bell"></i><div class="nav-dot" id="nav-notif-dot"></div>通知</button>
+    <button class="nav-btn" id="nav-hist" onclick="switchPage('hist',this,'評価履歴','過去の入庫評価');loadHistory()"><i class="ti ti-list"></i>履歴</button>
+    <button class="nav-btn" id="nav-rank" onclick="switchPage('rank',this,'ランキング','営業所別スコア');loadRanking()"><i class="ti ti-medal"></i>順位</button>
+    <button class="nav-btn" id="nav-knowledge" onclick="switchPage('knowledge',this,'ナレッジベース','メンテナンスノウハウ共有');loadKnowledge()"><i class="ti ti-book"></i>ナレッジ</button>
   </div>
 </div>
 
 </div>
+
+<!-- Firebase SDK -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDy1lWyRj2_cnUcuY5gH1EbviQoBqlSCzQ",
+  authDomain: "sarkland-quality-app.firebaseapp.com",
+  projectId: "sarkland-quality-app",
+  storageBucket: "sarkland-quality-app.firebasestorage.app",
+  messagingSenderId: "1077375444609",
+  appId: "1:1077375444609:web:16daab2625d566d2cb0f80"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+window.db = db;
+window.fsCollection = collection;
+window.fsAddDoc = addDoc;
+window.fsGetDocs = getDocs;
+window.fsQuery = query;
+window.fsOrderBy = orderBy;
+window.fsLimit = limit;
+window.fsWhere = where;
+window.fsServerTimestamp = serverTimestamp;
+
+// 初期データ読み込み
+window.addEventListener('load', () => {
+  if(document.getElementById('screen-main').style.display !== 'none'){
+    loadDashboard();
+  }
+});
+</script>
+
 <script>
 const OFFICES={
   '札幌営業所|sark-sapporo':{name:'札幌営業所',pw:'sark-sapporo'},
@@ -443,6 +468,15 @@ const OFFICES={
   'SOKO PLUS奈良|sark-sokonara':{name:'SOKO PLUS奈良',pw:'sark-sokonara'},
   'SOKO PLUS岡山|sark-sokookayama':{name:'SOKO PLUS岡山',pw:'sark-sokookayama'},
 };
+
+let currentOffice='', currentName='';
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.style.display='block';
+  setTimeout(()=>t.style.display='none',2500);
+}
+
 function doLogin(){
   const sel=document.getElementById('login-office').value;
   const name=document.getElementById('login-name').value.trim();
@@ -452,29 +486,192 @@ function doLogin(){
   const office=OFFICES[sel];
   if(!office||pw!==office.pw){err.style.display='block';err.textContent='パスワードが正しくありません';return;}
   err.style.display='none';
+  currentOffice=office.name; currentName=name;
   document.getElementById('disp-office').textContent=office.name;
   document.getElementById('disp-name').textContent=name;
   document.getElementById('page-sub').textContent=office.name;
   document.getElementById('screen-login').style.display='none';
   document.getElementById('screen-main').style.display='flex';
+  loadDashboard();
 }
+
 function doLogout(){
   document.getElementById('screen-main').style.display='none';
   document.getElementById('screen-login').style.display='block';
   document.getElementById('login-pw').value='';
 }
+
 function switchPage(id,el,title,sub){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('pg-'+id).classList.add('active');
   el.classList.add('active');
   document.getElementById('page-title').textContent=title;
-  document.getElementById('page-sub').textContent=sub||document.getElementById('disp-office').textContent;
+  document.getElementById('page-sub').textContent=sub||currentOffice;
 }
+
 function clearNotif(){
   document.getElementById('notif-dot').style.display='none';
   document.getElementById('nav-notif-dot').style.display='none';
 }
+
+// ダッシュボード読み込み
+async function loadDashboard(){
+  if(!window.db) return;
+  try{
+    const q=window.fsQuery(window.fsCollection(window.db,'evaluations'),window.fsOrderBy('createdAt','desc'),window.fsLimit(20));
+    const snap=await window.fsGetDocs(q);
+    const docs=snap.docs.map(d=>({id:d.id,...d.data()}));
+
+    // 統計
+    const now=new Date(); const monthStart=new Date(now.getFullYear(),now.getMonth(),1);
+    const thisMonth=docs.filter(d=>d.createdAt&&d.createdAt.toDate&&d.createdAt.toDate()>=monthStart);
+    document.getElementById('stat-count').textContent=thisMonth.length;
+
+    if(docs.length>0){
+      const avg=(docs.reduce((s,d)=>s+(d.totalScore||0),0)/docs.length).toFixed(1);
+      document.getElementById('stat-avg').textContent=avg;
+      const flags=docs.filter(d=>d.flags&&d.flags.length>0).length;
+      document.getElementById('stat-flags').textContent=flags;
+
+      // 項目別平均
+      const keys=['clean','looks','parts','pack'];
+      keys.forEach(k=>{
+        const vals=docs.filter(d=>d.scores&&d.scores[k]).map(d=>d.scores[k]);
+        if(vals.length){
+          const a=(vals.reduce((s,v)=>s+v,0)/vals.length).toFixed(1);
+          document.getElementById('val-'+k).textContent=a;
+          document.getElementById('prog-'+k).style.width=(a/5*100)+'%';
+        }
+      });
+    }
+
+    // 最近の評価
+    const recentEl=document.getElementById('recent-evals');
+    if(docs.length===0){recentEl.innerHTML='<div class="loading">まだ評価がありません</div>';return;}
+    recentEl.innerHTML=docs.slice(0,5).map(d=>{
+      const score=d.totalScore||0;
+      const badgeClass=score>=4?'badge-good':score>=3?'badge-mid':'badge-bad';
+      const stars='★'.repeat(Math.round(score))+'☆'.repeat(5-Math.round(score));
+      const flags=d.flags&&d.flags.length>0?`<span style="color:var(--red);margin-left:4px;">${d.flags[0]}</span>`:'';
+      const date=d.createdAt&&d.createdAt.toDate?d.createdAt.toDate().toLocaleDateString('ja-JP'):'';
+      return `<div class="hist-item"><div class="hist-top"><span class="hist-name">${d.itemName||'商品名なし'}</span><span class="badge ${badgeClass}">${stars}</span></div><div class="hist-meta">${d.fromOffice||''}→${d.toOffice||''} · ${d.category||''} · ${date} · ${d.evaluator||''}${flags}</div></div>`;
+    }).join('');
+  }catch(e){console.error(e);}
+}
+
+// 履歴読み込み
+async function loadHistory(){
+  if(!window.db) return;
+  const listEl=document.getElementById('hist-list');
+  listEl.innerHTML='<div class="loading">読み込み中...</div>';
+  try{
+    const q=window.fsQuery(window.fsCollection(window.db,'evaluations'),window.fsOrderBy('createdAt','desc'),window.fsLimit(50));
+    const snap=await window.fsGetDocs(q);
+    let docs=snap.docs.map(d=>({id:d.id,...d.data()}));
+    const offFilter=document.getElementById('hist-filter-office').value;
+    const scoreFilter=document.getElementById('hist-filter-score').value;
+    if(offFilter) docs=docs.filter(d=>d.fromOffice===offFilter||d.toOffice===offFilter);
+    if(scoreFilter==='low') docs=docs.filter(d=>d.totalScore<3);
+    else if(scoreFilter==='mid') docs=docs.filter(d=>d.totalScore>=3&&d.totalScore<4);
+    else if(scoreFilter==='high') docs=docs.filter(d=>d.totalScore>=4);
+    if(docs.length===0){listEl.innerHTML='<div class="loading">該当する評価がありません</div>';return;}
+    listEl.innerHTML=docs.map(d=>{
+      const score=d.totalScore||0;
+      const badgeClass=score>=4?'badge-good':score>=3?'badge-mid':'badge-bad';
+      const stars='★'.repeat(Math.round(score))+'☆'.repeat(5-Math.round(score));
+      const flags=d.flags&&d.flags.length>0?`<span style="color:var(--red);margin-left:4px;">${d.flags.join('・')}</span>`:'';
+      const date=d.createdAt&&d.createdAt.toDate?d.createdAt.toDate().toLocaleDateString('ja-JP'):'';
+      return `<div class="hist-item"><div class="hist-top"><span class="hist-name">${d.itemName||'商品名なし'}</span><span class="badge ${badgeClass}">${stars}</span></div><div class="hist-meta">${d.fromOffice||''}→${d.toOffice||''} · ${d.category||''} · ${date} · ${d.evaluator||''}${flags}</div></div>`;
+    }).join('');
+  }catch(e){listEl.innerHTML='<div class="loading">読み込みエラー</div>';}
+}
+
+// 通知読み込み
+async function loadNotifications(){
+  if(!window.db) return;
+  const listEl=document.getElementById('notif-list');
+  listEl.innerHTML='<div class="loading">読み込み中...</div>';
+  try{
+    const q=window.fsQuery(window.fsCollection(window.db,'evaluations'),window.fsWhere('toOffice','==',currentOffice),window.fsOrderBy('createdAt','desc'),window.fsLimit(20));
+    const snap=await window.fsGetDocs(q);
+    const docs=snap.docs.map(d=>({id:d.id,...d.data()}));
+    if(docs.length===0){listEl.innerHTML='<div class="loading">通知はありません</div>';return;}
+    listEl.innerHTML='<div class="card" style="padding:0;overflow:hidden;">'+docs.map(d=>{
+      const score=d.totalScore||0;
+      const iconClass=score<3?'warn':score>=4?'ok':'';
+      const iconName=score<3?'ti-alert-triangle':score>=4?'ti-circle-check':'ti-clipboard-check';
+      const stars='★'.repeat(Math.round(score))+'☆'.repeat(5-Math.round(score));
+      const flags=d.flags&&d.flags.length>0?`・${d.flags.join('・')}`:'';
+      const date=d.createdAt&&d.createdAt.toDate?d.createdAt.toDate().toLocaleDateString('ja-JP'):'';
+      return `<div class="notif-item"><div class="notif-icon ${iconClass}"><i class="ti ${iconName}"></i></div><div><div class="notif-title">${d.fromOffice||''}から評価が届きました</div><div class="notif-body">${d.itemName||''} — ${stars}${flags}</div><div class="notif-time">${date} · 所長にもメール送信済み</div></div></div>`;
+    }).join('')+'</div>';
+  }catch(e){listEl.innerHTML='<div class="loading">読み込みエラー</div>';}
+}
+
+// ランキング読み込み
+async function loadRanking(){
+  if(!window.db) return;
+  const listEl=document.getElementById('rank-list');
+  listEl.innerHTML='<div class="loading">読み込み中...</div>';
+  try{
+    const thirtyDaysAgo=new Date(); thirtyDaysAgo.setDate(thirtyDaysAgo.getDate()-30);
+    const q=window.fsQuery(window.fsCollection(window.db,'evaluations'),window.fsOrderBy('createdAt','desc'),window.fsLimit(200));
+    const snap=await window.fsGetDocs(q);
+    const docs=snap.docs.map(d=>({id:d.id,...d.data()}));
+    const officeScores={};
+    docs.forEach(d=>{
+      if(!d.fromOffice||!d.totalScore) return;
+      if(!officeScores[d.fromOffice]) officeScores[d.fromOffice]={sum:0,count:0};
+      officeScores[d.fromOffice].sum+=d.totalScore;
+      officeScores[d.fromOffice].count++;
+    });
+    const ranked=Object.entries(officeScores).map(([name,{sum,count}])=>({name,avg:sum/count})).sort((a,b)=>b.avg-a.avg);
+    if(ranked.length===0){listEl.innerHTML='<div class="loading">データがまだありません</div>';return;}
+    const medals=['🥇','🥈','🥉'];
+    listEl.innerHTML=ranked.map((o,i)=>{
+      const pct=(o.avg/5*100).toFixed(0);
+      const color=o.avg>=4?'var(--green)':o.avg>=3?'var(--purple)':'#854F0B';
+      const label=medals[i]||'';
+      return `<div class="rank-item"><div class="rank-num" style="color:${color};">${i+1}</div><div class="rank-info"><div class="rank-name">${label} ${o.name}</div><div class="rank-bar-wrap"><div class="rank-track"><div class="rank-fill" style="width:${pct}%;background:${color};"></div></div><span style="font-size:13px;font-weight:600;color:${color};">${o.avg.toFixed(1)}</span></div></div></div>`;
+    }).join('');
+  }catch(e){listEl.innerHTML='<div class="loading">読み込みエラー</div>';}
+}
+
+// ナレッジ読み込み
+let allKnowledge=[];
+async function loadKnowledge(){
+  if(!window.db) return;
+  const listEl=document.getElementById('knowledge-list');
+  listEl.innerHTML='<div class="loading">読み込み中...</div>';
+  try{
+    const q=window.fsQuery(window.fsCollection(window.db,'knowledge'),window.fsOrderBy('helpfulCount','desc'));
+    const snap=await window.fsGetDocs(q);
+    allKnowledge=snap.docs.map(d=>({id:d.id,...d.data()}));
+    renderKnowledge(allKnowledge);
+  }catch(e){
+    // サンプルデータを表示
+    allKnowledge=[
+      {title:'冷蔵庫の臭い取り・内部クリーニング手順',tag:'家電 / 冷蔵庫',author:'埼玉営業所',helpfulCount:18},
+      {title:'折りたたみベッドのフレーム軋み対処法',tag:'家具 / ベッド',author:'南関東営業所',helpfulCount:12},
+      {title:'ポップコーンマシンの油汚れ除去チェックリスト',tag:'イベント用品',author:'麻布営業所',helpfulCount:9},
+      {title:'付属品管理・チェックリスト標準テンプレート',tag:'共通 / 付属品',author:'本部',helpfulCount:34},
+    ];
+    renderKnowledge(allKnowledge);
+  }
+}
+function renderKnowledge(items){
+  const listEl=document.getElementById('knowledge-list');
+  if(items.length===0){listEl.innerHTML='<div class="loading">ナレッジがありません</div>';return;}
+  listEl.innerHTML=items.map(k=>`<div class="knowledge-item"><div class="knowledge-tag">${k.tag||'その他'}</div><div class="knowledge-title">${k.title}</div><div class="knowledge-meta">${k.author||''} · 参考になった ${k.helpfulCount||0}件</div></div>`).join('');
+}
+function filterKnowledge(){
+  const kw=document.getElementById('knowledge-search').value.toLowerCase();
+  renderKnowledge(allKnowledge.filter(k=>(k.title||'').toLowerCase().includes(kw)||(k.tag||'').toLowerCase().includes(kw)));
+}
+function showAddKnowledge(){showToast('ナレッジ投稿機能は準備中です');}
+
+// 星評価
 document.querySelectorAll('.star-row').forEach(row=>{
   for(let i=1;i<=5;i++){
     const s=document.createElement('span');
@@ -488,6 +685,7 @@ document.querySelectorAll('.star-row').forEach(row=>{
     row.appendChild(s);
   }
 });
+
 function updateScore(){
   const rows=document.querySelectorAll('#pg-check .star-row');
   let sum=0,n=0;
@@ -506,7 +704,9 @@ function updateScore(){
   else if(avg>=3)be.innerHTML='<span class="badge badge-mid">普通</span>';
   else be.innerHTML='<span class="badge badge-bad">要改善</span>';
 }
+
 function toggleFlag(btn){btn.classList.toggle('active');}
+
 let photos=[];
 function handlePhoto(e){
   const file=e.target.files[0];if(!file)return;
@@ -518,19 +718,59 @@ function renderPhotos(){
   const grid=document.getElementById('photo-grid');
   if(!photos.length){grid.style.display='none';grid.innerHTML='';return;}
   grid.style.display='grid';
-  grid.innerHTML=photos.map((src,i)=>
-    `<div class="photo-thumb"><img src="${src}" alt="写真${i+1}"><button class="photo-remove" onclick="removePhoto(${i})"><i class="ti ti-x" style="font-size:13px;"></i></button></div>`
-  ).join('');
+  grid.innerHTML=photos.map((src,i)=>`<div class="photo-thumb"><img src="${src}" alt="写真${i+1}"><button class="photo-remove" onclick="removePhoto(${i})"><i class="ti ti-x" style="font-size:13px;"></i></button></div>`).join('');
 }
 function removePhoto(i){photos.splice(i,1);renderPhotos();}
-function doSubmit(){
-  const from=document.getElementById('check-from').value||'送り元営業所';
-  document.getElementById('notif-to-app').textContent=from+'のスタッフのアプリに届きます';
-  document.getElementById('notif-to-mail').textContent=from+'の所長宛に詳細レポートを送信';
-  document.getElementById('check-success').classList.add('show');
-  document.getElementById('notif-dot').style.display='block';
-  document.getElementById('nav-notif-dot').style.display='block';
+
+// 評価送信（Firestore保存）
+async function doSubmit(){
+  const from=document.getElementById('check-from').value;
+  const item=document.getElementById('check-item').value.trim();
+  const cat=document.getElementById('check-cat').value;
+  const comment=document.getElementById('check-comment').value.trim();
+  if(!from||!item){showToast('送り元営業所と商品名を入力してください');return;}
+
+  const rows=document.querySelectorAll('#pg-check .star-row');
+  let allScored=true;
+  rows.forEach(r=>{if(!r.dataset.score)allScored=false;});
+  if(!allScored){showToast('全項目を採点してください');return;}
+
+  const scores={
+    clean:parseInt(document.querySelector('[data-key="c1"]').dataset.score),
+    looks:parseInt(document.querySelector('[data-key="c2"]').dataset.score),
+    parts:parseInt(document.querySelector('[data-key="c3"]').dataset.score),
+    pack:parseInt(document.querySelector('[data-key="c4"]').dataset.score),
+  };
+  const totalScore=(scores.clean+scores.looks+scores.parts+scores.pack)/4;
+  const flags=[...document.querySelectorAll('.flag-btn.active')].map(b=>b.textContent.trim());
+
+  const btn=document.getElementById('submit-btn');
+  btn.disabled=true; btn.textContent='送信中...';
+
+  try{
+    await window.fsAddDoc(window.fsCollection(window.db,'evaluations'),{
+      fromOffice:from,
+      toOffice:currentOffice,
+      evaluator:currentName,
+      itemName:item,
+      category:cat,
+      scores,
+      totalScore:parseFloat(totalScore.toFixed(2)),
+      flags,
+      comment,
+      createdAt:window.fsServerTimestamp(),
+    });
+    document.getElementById('notif-to-mail').textContent=from+'の所長宛に詳細レポートを送信';
+    document.getElementById('check-success').classList.add('show');
+    document.getElementById('notif-dot').style.display='block';
+    document.getElementById('nav-notif-dot').style.display='block';
+  }catch(e){
+    showToast('送信に失敗しました。もう一度お試しください。');
+    console.error(e);
+  }
+  btn.disabled=false; btn.textContent='評価を送信する';
 }
+
 function resetCheck(){
   document.getElementById('check-success').classList.remove('show');
   document.querySelectorAll('#pg-check .star-row').forEach(r=>{
@@ -539,8 +779,11 @@ function resetCheck(){
   });
   document.querySelectorAll('.flag-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('score-bar').style.display='none';
-  photos=[];renderPhotos();
   document.getElementById('check-from').value='';
+  document.getElementById('check-item').value='';
+  document.getElementById('check-comment').value='';
+  photos=[];renderPhotos();
+  loadDashboard();
 }
 </script>
 </body>
