@@ -19,7 +19,6 @@
 }
 body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Yu Gothic',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
 .phone{max-width:390px;margin:0 auto;background:var(--bg);min-height:100vh;display:flex;flex-direction:column;position:relative;}
-/* Topbar */
 .topbar{background:var(--bg2);border-bottom:0.5px solid var(--border2);padding:14px 16px 10px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
 .topbar-left{display:flex;align-items:center;gap:10px;}
 .topbar-title{font-size:17px;font-weight:600;}
@@ -28,38 +27,31 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Yu Gothic',sa
 .icon-btn{background:none;border:none;cursor:pointer;color:var(--text2);padding:0;display:flex;align-items:center;}
 .notif-wrap{position:relative;}
 .notif-dot{width:8px;height:8px;background:#E24B4A;border-radius:50%;position:absolute;top:-1px;right:-1px;display:none;}
-/* Content */
 .content{flex:1;padding:12px 16px 90px;overflow-y:auto;}
 .page{display:none;}.page.active{display:block;}
-/* Bottom Nav */
 .bottomnav{background:var(--bg2);border-top:0.5px solid var(--border2);display:flex;padding:8px 0 20px;position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:390px;z-index:100;}
-.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:4px 0;color:var(--text2);font-size:10px;background:none;border:none;-webkit-tap-highlight-color:transparent;position:relative;}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:4px 0;color:var(--text2);font-size:10px;background:none;border:none;-webkit-tap-highlight-color:transparent;position:relative;font-family:inherit;}
 .nav-btn i{font-size:22px;}
 .nav-btn.active{color:var(--purple);}
 .nav-dot{width:6px;height:6px;background:#E24B4A;border-radius:50%;position:absolute;top:2px;right:calc(50% - 14px);display:none;}
-/* Cards */
 .card{background:var(--bg2);border:0.5px solid var(--border2);border-radius:var(--radius);padding:14px 16px;margin-bottom:10px;}
 .card-title{font-size:13px;font-weight:600;color:var(--text2);margin-bottom:12px;}
 .section-label{font-size:11px;font-weight:600;color:var(--text2);letter-spacing:.5px;text-transform:uppercase;margin:16px 0 6px;}
-/* Form */
 .field-group{margin-bottom:12px;}.field-group:last-child{margin-bottom:0;}
 .field-label{font-size:12px;color:var(--text2);margin-bottom:5px;font-weight:500;}
 select,input,textarea{font-family:inherit;font-size:15px;width:100%;background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;color:var(--text);-webkit-appearance:none;}
 select:focus,input:focus,textarea:focus{outline:2px solid var(--purple);border-color:transparent;}
 textarea{min-height:72px;resize:none;}
-/* Metrics */
 .metric-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
 .metric{background:var(--bg2);border:0.5px solid var(--border2);border-radius:var(--radius);padding:14px;}
 .metric-val{font-size:26px;font-weight:600;}
 .metric-val.good{color:var(--green);}
 .metric-val.warn{color:#854F0B;}
 .metric-lbl{font-size:11px;color:var(--text2);margin-top:3px;}
-/* Progress */
 .prog-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
 .prog-lbl{font-size:13px;color:var(--text2);width:68px;flex-shrink:0;}
 .prog-track{flex:1;height:6px;background:var(--bg3);border-radius:3px;}
 .prog-fill{height:6px;border-radius:3px;background:var(--purple);}
-/* Stars */
 .eval-item{padding:14px 0;border-bottom:0.5px solid var(--border2);}
 .eval-item:last-child{border-bottom:none;padding-bottom:0;}
 .eval-item:first-child{padding-top:0;}
@@ -68,7 +60,6 @@ textarea{min-height:72px;resize:none;}
 .star-row{display:flex;gap:8px;}
 .star{font-size:36px;cursor:pointer;color:var(--border);line-height:1;-webkit-tap-highlight-color:transparent;transition:color .1s;}
 .star.on{color:var(--orange);}
-/* Score */
 .score-bar{background:var(--purple-light);border-radius:var(--radius);padding:14px 16px;margin-bottom:10px;display:none;align-items:center;gap:14px;}
 .score-num{font-size:40px;font-weight:700;line-height:1;min-width:56px;color:var(--purple);}
 .score-num.good{color:var(--green);}
@@ -76,33 +67,27 @@ textarea{min-height:72px;resize:none;}
 .score-num.bad{color:var(--red);}
 .score-stars{font-size:18px;color:var(--orange);letter-spacing:2px;}
 .score-label{font-size:12px;color:var(--text2);margin-top:2px;}
-/* Badges */
 .badge{display:inline-block;font-size:12px;padding:3px 10px;border-radius:20px;font-weight:600;}
 .badge-good{background:var(--green-light);color:var(--green);}
 .badge-mid{background:var(--orange-light);color:#854F0B;}
 .badge-bad{background:var(--red-light);color:var(--red);}
-/* Flags */
 .flags{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
 .flag-btn{display:flex;align-items:center;gap:8px;padding:12px;border:0.5px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;font-size:13px;font-weight:500;color:var(--text2);background:var(--bg);-webkit-tap-highlight-color:transparent;font-family:inherit;}
 .flag-btn i{font-size:20px;}
 .flag-btn.active{border-color:var(--purple);background:var(--purple-light);color:var(--purple-dark);}
-/* Camera */
-.camera-area{border:2px dashed var(--border);border-radius:var(--radius);padding:24px;text-align:center;cursor:pointer;background:var(--bg);margin-bottom:10px;-webkit-tap-highlight-color:transparent;}
+.camera-area{border:2px dashed var(--border);border-radius:var(--radius);padding:24px;text-align:center;cursor:pointer;background:var(--bg);margin-bottom:10px;}
 .camera-area i{font-size:40px;color:var(--text2);display:block;margin-bottom:8px;}
 .camera-area span{font-size:14px;color:var(--text2);}
 .photo-grid{display:none;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
 .photo-thumb{border-radius:var(--radius-sm);overflow:hidden;aspect-ratio:1;background:var(--bg3);position:relative;}
 .photo-thumb img{width:100%;height:100%;object-fit:cover;}
 .photo-remove{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.55);border:none;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#fff;font-size:14px;}
-/* Buttons */
 .primary-btn{width:100%;padding:16px;background:var(--purple);color:#fff;border:none;border-radius:var(--radius);font-size:16px;font-weight:600;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;margin-bottom:8px;}
 .primary-btn:active{background:var(--purple-dark);}
-/* History */
 .hist-item{background:var(--bg2);border:0.5px solid var(--border2);border-radius:var(--radius);padding:12px 14px;margin-bottom:8px;}
 .hist-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;}
 .hist-name{font-size:14px;font-weight:600;}
 .hist-meta{font-size:12px;color:var(--text2);}
-/* Ranking */
 .rank-item{background:var(--bg2);border:0.5px solid var(--border2);border-radius:var(--radius);padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;}
 .rank-num{font-size:13px;color:var(--text2);width:20px;text-align:center;flex-shrink:0;font-weight:600;}
 .rank-info{flex:1;}
@@ -110,12 +95,10 @@ textarea{min-height:72px;resize:none;}
 .rank-bar-wrap{display:flex;align-items:center;gap:8px;}
 .rank-track{flex:1;height:5px;background:var(--bg3);border-radius:3px;}
 .rank-fill{height:5px;border-radius:3px;}
-/* Knowledge */
 .knowledge-item{background:var(--bg2);border:0.5px solid var(--border2);border-radius:var(--radius);padding:12px 14px;margin-bottom:8px;}
 .knowledge-tag{font-size:11px;background:var(--purple-light);color:var(--purple);padding:2px 10px;border-radius:20px;display:inline-block;margin-bottom:6px;font-weight:600;}
 .knowledge-title{font-size:14px;font-weight:600;margin-bottom:3px;}
 .knowledge-meta{font-size:12px;color:var(--text2);}
-/* Notifications */
 .notif-item{padding:14px;border-bottom:0.5px solid var(--border2);display:flex;gap:12px;align-items:flex-start;}
 .notif-item:last-child{border-bottom:none;}
 .notif-icon{width:40px;height:40px;border-radius:50%;background:var(--purple-light);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
@@ -125,11 +108,9 @@ textarea{min-height:72px;resize:none;}
 .notif-title{font-size:14px;font-weight:600;margin-bottom:2px;}
 .notif-body{font-size:13px;color:var(--text2);}
 .notif-time{font-size:11px;color:var(--text2);margin-top:3px;}
-/* Success overlay */
 .success-overlay{display:none;position:absolute;inset:0;background:var(--bg2);z-index:200;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:32px;}
 .success-overlay.show{display:flex;}
 .flow-box{border:0.5px solid var(--border2);border-radius:var(--radius);padding:12px 16px;display:flex;align-items:center;gap:12px;width:100%;background:var(--bg);}
-/* Login */
 .login-screen{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:32px 24px;gap:14px;background:var(--bg);}
 .login-logo{text-align:center;padding-bottom:8px;}
 .login-logo-icon{width:80px;height:80px;background:var(--purple-light);border-radius:24px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:12px;}
@@ -149,11 +130,10 @@ textarea{min-height:72px;resize:none;}
   <div class="login-screen">
     <div class="login-logo">
       <div class="login-logo-icon">
-        <svg width="52" height="42" viewBox="0 0 120 95" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg width="52" height="42" viewBox="0 0 120 95" fill="none">
           <path d="M60 18 C60 18 50 8 42 12 C34 16 34 28 42 34 L60 50 L78 34 C86 28 86 16 78 12 C70 8 60 18 60 18 Z" stroke="#534AB7" stroke-width="5" stroke-linejoin="round" fill="none"/>
           <rect x="10" y="50" width="58" height="30" rx="2" stroke="#534AB7" stroke-width="5" fill="none"/>
           <path d="M68 62 L68 80 L108 80 L108 65 L95 50 L68 50 Z" stroke="#534AB7" stroke-width="5" stroke-linejoin="round" fill="none"/>
-          <path d="M72 54 L72 64 L100 64 L100 54 Z" stroke="#534AB7" stroke-width="3.5" fill="none"/>
           <rect x="24" y="58" width="28" height="20" rx="2" stroke="#534AB7" stroke-width="3.5" fill="none"/>
           <line x1="38" y1="58" x2="38" y2="78" stroke="#534AB7" stroke-width="2.5"/>
           <line x1="24" y1="68" x2="52" y2="68" stroke="#534AB7" stroke-width="2.5"/>
@@ -172,14 +152,32 @@ textarea{min-height:72px;resize:none;}
         <div class="field-label">営業所</div>
         <select id="login-office">
           <option value="">-- 選択してください --</option>
-          <option value="麻布営業所|sark-azabu">麻布営業所</option>
-          <option value="大宮営業所|sark-omiya">大宮営業所</option>
-          <option value="横浜営業所|sark-yokohama">横浜営業所</option>
-          <option value="札幌営業所|sark-sapporo">札幌営業所</option>
-          <option value="仙台営業所|sark-sendai">仙台営業所</option>
-          <option value="名古屋営業所|sark-nagoya">名古屋営業所</option>
-          <option value="大阪営業所|sark-osaka">大阪営業所</option>
-          <option value="福岡営業所|sark-fukuoka">福岡営業所</option>
+          <option value="札幌営業所|sark-sapporo">札幌営業所（北海道）</option>
+          <option value="盛岡営業所|sark-morioka">盛岡営業所（岩手県）</option>
+          <option value="仙台営業所|sark-sendai">仙台営業所（宮城県）</option>
+          <option value="いわき営業所|sark-iwaki">いわき営業所（福島県）</option>
+          <option value="新潟営業所|sark-niigata">新潟営業所（新潟県）</option>
+          <option value="北関東営業所|sark-kitkanto">北関東営業所（埼玉県）</option>
+          <option value="埼玉営業所|sark-saitama">埼玉営業所（埼玉県）</option>
+          <option value="東関東営業所|sark-higkanto">東関東営業所（千葉県）</option>
+          <option value="東京営業所|sark-tokyo">東京営業所（東京都）</option>
+          <option value="西関東営業所|sark-nishkanto">西関東営業所（東京都）</option>
+          <option value="麻布営業所|sark-azabu">麻布営業所（東京都）</option>
+          <option value="南関東営業所|sark-minamikanto">南関東営業所（神奈川県）</option>
+          <option value="静岡営業所|sark-shizuoka">静岡営業所（静岡県）</option>
+          <option value="名古屋営業所|sark-nagoya">名古屋営業所（愛知県）</option>
+          <option value="滋賀営業所|sark-shiga">滋賀営業所（滋賀県）</option>
+          <option value="関西営業所|sark-kansai">関西営業所（大阪府）</option>
+          <option value="兵庫営業所|sark-hyogo">兵庫営業所（兵庫県）</option>
+          <option value="広島営業所|sark-hiroshima">広島営業所（広島県）</option>
+          <option value="四国営業所|sark-shikoku">四国営業所（愛媛県）</option>
+          <option value="福岡営業所|sark-fukuoka">福岡営業所（福岡県）</option>
+          <option value="南九州営業所|sark-minamikyushu">南九州営業所（宮崎県）</option>
+          <option value="北関東物流センター|sark-kitlogistics">北関東物流センター（埼玉県）</option>
+          <option value="SOKOPLUSいわき|sark-sokoiwaki">SOKO PLUSいわき（福島県）</option>
+          <option value="SOKO PLUS千葉|sark-sokochiba">SOKO PLUS千葉（千葉県）</option>
+          <option value="SOKO PLUS奈良|sark-sokonara">SOKO PLUS奈良（奈良県）</option>
+          <option value="SOKO PLUS岡山|sark-sokookayama">SOKO PLUS岡山（岡山県）</option>
         </select>
       </div>
       <div class="field-group">
@@ -236,7 +234,7 @@ textarea{min-height:72px;resize:none;}
         <div class="metric"><div class="metric-val">142</div><div class="metric-lbl">今月の評価件数</div></div>
         <div class="metric"><div class="metric-val good">3.8</div><div class="metric-lbl">全社平均スコア</div></div>
         <div class="metric"><div class="metric-val warn">12</div><div class="metric-lbl">要改善フラグ</div></div>
-        <div class="metric"><div class="metric-val">23/23</div><div class="metric-lbl">参加営業所</div></div>
+        <div class="metric"><div class="metric-val">26/26</div><div class="metric-lbl">参加拠点</div></div>
       </div>
       <div class="card">
         <div class="card-title">評価項目別 平均スコア（全社）</div>
@@ -274,9 +272,15 @@ textarea{min-height:72px;resize:none;}
         <div class="field-group"><div class="field-label">送り元営業所</div>
           <select id="check-from">
             <option value="">-- 選択 --</option>
-            <option>麻布営業所</option><option>大宮営業所</option><option>横浜営業所</option>
-            <option>札幌営業所</option><option>仙台営業所</option><option>名古屋営業所</option>
-            <option>大阪営業所</option><option>福岡営業所</option>
+            <option>札幌営業所</option><option>盛岡営業所</option><option>仙台営業所</option>
+            <option>いわき営業所</option><option>新潟営業所</option><option>北関東営業所</option>
+            <option>埼玉営業所</option><option>東関東営業所</option><option>東京営業所</option>
+            <option>西関東営業所</option><option>麻布営業所</option><option>南関東営業所</option>
+            <option>静岡営業所</option><option>名古屋営業所</option><option>滋賀営業所</option>
+            <option>関西営業所</option><option>兵庫営業所</option><option>広島営業所</option>
+            <option>四国営業所</option><option>福岡営業所</option><option>南九州営業所</option>
+            <option>北関東物流センター</option><option>SOKOPLUSいわき</option>
+            <option>SOKO PLUS千葉</option><option>SOKO PLUS奈良</option><option>SOKO PLUS岡山</option>
           </select>
         </div>
         <div class="field-group"><div class="field-label">カテゴリ</div>
@@ -350,11 +354,11 @@ textarea{min-height:72px;resize:none;}
         </div>
         <div class="notif-item">
           <div class="notif-icon ok"><i class="ti ti-circle-check"></i></div>
-          <div><div class="notif-title">大宮営業所から評価が届きました</div><div class="notif-body">ポップコーンマシン #P-07 — ★★★★★・良好</div><div class="notif-time">2時間前 · 所長にもメール送信済み</div></div>
+          <div><div class="notif-title">埼玉営業所から評価が届きました</div><div class="notif-body">ポップコーンマシン #P-07 — ★★★★★・良好</div><div class="notif-time">2時間前 · 所長にもメール送信済み</div></div>
         </div>
         <div class="notif-item">
           <div class="notif-icon"><i class="ti ti-clipboard-check"></i></div>
-          <div><div class="notif-title">横浜営業所から評価が届きました</div><div class="notif-body">シングルベッド #B-23 — ★★★★☆</div><div class="notif-time">昨日 · 所長にもメール送信済み</div></div>
+          <div><div class="notif-title">南関東営業所から評価が届きました</div><div class="notif-body">シングルベッド #B-23 — ★★★★☆</div><div class="notif-time">昨日 · 所長にもメール送信済み</div></div>
         </div>
       </div>
     </div>
@@ -362,27 +366,27 @@ textarea{min-height:72px;resize:none;}
     <!-- 履歴 -->
     <div class="page" id="pg-hist">
       <div class="filter-row">
-        <select><option>全営業所</option><option>札幌</option><option>仙台</option><option>福岡</option></select>
+        <select><option>全営業所</option><option>札幌</option><option>仙台</option><option>福岡</option><option>東京</option><option>名古屋</option><option>関西</option></select>
         <select><option>全スコア</option><option>★1-2</option><option>★3</option><option>★4-5</option></select>
       </div>
       <div class="hist-item"><div class="hist-top"><span class="hist-name">折りたたみテーブル #T-18</span><span class="badge badge-mid">★★★</span></div><div class="hist-meta">福岡→麻布 · 家具 · 5/21 · 田中</div></div>
       <div class="hist-item"><div class="hist-top"><span class="hist-name">冷蔵庫 80L #A-042</span><span class="badge badge-bad">★★</span></div><div class="hist-meta">札幌→仙台 · 家電 · 5/20 · 佐藤 · <span style="color:var(--red);">欠品</span></div></div>
-      <div class="hist-item"><div class="hist-top"><span class="hist-name">ポップコーンマシン #P-07</span><span class="badge badge-good">★★★★★</span></div><div class="hist-meta">大宮→横浜 · イベント · 5/20 · 鈴木</div></div>
-      <div class="hist-item"><div class="hist-top"><span class="hist-name">シングルベッド #B-23</span><span class="badge badge-good">★★★★</span></div><div class="hist-meta">横浜→麻布 · 家具 · 5/19 · 田中</div></div>
-      <div class="hist-item"><div class="hist-top"><span class="hist-name">シーリングライト #L-09</span><span class="badge badge-mid">★★★</span></div><div class="hist-meta">仙台→大宮 · 家電 · 5/18 · 渡辺 · <span style="color:#854F0B;">要修理</span></div></div>
+      <div class="hist-item"><div class="hist-top"><span class="hist-name">ポップコーンマシン #P-07</span><span class="badge badge-good">★★★★★</span></div><div class="hist-meta">埼玉→横浜 · イベント · 5/20 · 鈴木</div></div>
+      <div class="hist-item"><div class="hist-top"><span class="hist-name">シングルベッド #B-23</span><span class="badge badge-good">★★★★</span></div><div class="hist-meta">南関東→麻布 · 家具 · 5/19 · 田中</div></div>
+      <div class="hist-item"><div class="hist-top"><span class="hist-name">シーリングライト #L-09</span><span class="badge badge-mid">★★★</span></div><div class="hist-meta">仙台→東京 · 家電 · 5/18 · 渡辺 · <span style="color:#854F0B;">要修理</span></div></div>
     </div>
 
     <!-- ランキング -->
     <div class="page" id="pg-rank">
       <div style="font-size:12px;color:var(--text2);margin-bottom:10px;">直近30日 · 受取側からの評価平均</div>
-      <div class="rank-item"><div class="rank-num">1</div><div class="rank-info"><div class="rank-name">🥇 大宮営業所</div><div class="rank-bar-wrap"><div class="rank-track"><div class="rank-fill" style="width:92%;background:var(--green);"></div></div><span style="font-size:13px;font-weight:600;color:var(--green);">4.6</span></div></div></div>
-      <div class="rank-item"><div class="rank-num">2</div><div class="rank-info"><div class="rank-name">🥈 横浜営業所</div><div class="rank-bar-wrap"><div class="rank-track"><div class="rank-fill" style="width:86%;background:var(--green);"></div></div><span style="font-size:13px;font-weight:600;color:var(--green);">4.3</span></div></div></div>
+      <div class="rank-item"><div class="rank-num">1</div><div class="rank-info"><div class="rank-name">🥇 埼玉営業所</div><div class="rank-bar-wrap"><div class="rank-track"><div class="rank-fill" style="width:92%;background:var(--green);"></div></div><span style="font-size:13px;font-weight:600;color:var(--green);">4.6</span></div></div></div>
+      <div class="rank-item"><div class="rank-num">2</div><div class="rank-info"><div class="rank-name">🥈 南関東営業所</div><div class="rank-bar-wrap"><div class="rank-track"><div class="rank-fill" style="width:86%;background:var(--green);"></div></div><span style="font-size:13px;font-weight:600;color:var(--green);">4.3</span></div></div></div>
       <div class="rank-item"><div class="rank-num">3</div><div class="rank-info"><div class="rank-name">🥉 麻布営業所</div><div class="rank-bar-wrap"><div class="rank-track"><div class="rank-fill" style="width:82%;background:var(--purple);"></div></div><span style="font-size:13px;font-weight:600;">4.1</span></div></div></div>
       <div class="rank-item"><div class="rank-num">4</div><div class="rank-info"><div class="rank-name">名古屋営業所</div><div class="rank-bar-wrap"><div class="rank-track"><div class="rank-fill" style="width:78%;background:var(--purple);"></div></div><span style="font-size:13px;font-weight:600;">3.9</span></div></div></div>
-      <div class="rank-item"><div class="rank-num">5</div><div class="rank-info"><div class="rank-name">大阪営業所</div><div class="rank-bar-wrap"><div class="rank-track"><div class="rank-fill" style="width:74%;background:var(--purple);"></div></div><span style="font-size:13px;font-weight:600;">3.7</span></div></div></div>
-      <div class="rank-item"><div class="rank-num" style="color:#854F0B;">21</div><div class="rank-info"><div class="rank-name">札幌営業所</div><div class="rank-bar-wrap"><div class="rank-track"><div class="rank-fill" style="width:62%;background:#854F0B;"></div></div><span style="font-size:13px;font-weight:600;color:#854F0B;">3.1</span></div></div></div>
-      <div class="rank-item"><div class="rank-num" style="color:#854F0B;">22</div><div class="rank-info"><div class="rank-name">仙台営業所</div><div class="rank-bar-wrap"><div class="rank-track"><div class="rank-fill" style="width:58%;background:#854F0B;"></div></div><span style="font-size:13px;font-weight:600;color:#854F0B;">2.9</span></div></div></div>
-      <div class="rank-item"><div class="rank-num" style="color:var(--red);">23</div><div class="rank-info"><div class="rank-name">福岡営業所</div><div class="rank-bar-wrap"><div class="rank-track"><div class="rank-fill" style="width:50%;background:var(--red);"></div></div><span style="font-size:13px;font-weight:600;color:var(--red);">2.5</span></div></div></div>
+      <div class="rank-item"><div class="rank-num">5</div><div class="rank-info"><div class="rank-name">関西営業所</div><div class="rank-bar-wrap"><div class="rank-track"><div class="rank-fill" style="width:74%;background:var(--purple);"></div></div><span style="font-size:13px;font-weight:600;">3.7</span></div></div></div>
+      <div class="rank-item"><div class="rank-num" style="color:#854F0B;">24</div><div class="rank-info"><div class="rank-name">札幌営業所</div><div class="rank-bar-wrap"><div class="rank-track"><div class="rank-fill" style="width:62%;background:#854F0B;"></div></div><span style="font-size:13px;font-weight:600;color:#854F0B;">3.1</span></div></div></div>
+      <div class="rank-item"><div class="rank-num" style="color:#854F0B;">25</div><div class="rank-info"><div class="rank-name">仙台営業所</div><div class="rank-bar-wrap"><div class="rank-track"><div class="rank-fill" style="width:58%;background:#854F0B;"></div></div><span style="font-size:13px;font-weight:600;color:#854F0B;">2.9</span></div></div></div>
+      <div class="rank-item"><div class="rank-num" style="color:var(--red);">26</div><div class="rank-info"><div class="rank-name">福岡営業所</div><div class="rank-bar-wrap"><div class="rank-track"><div class="rank-fill" style="width:50%;background:var(--red);"></div></div><span style="font-size:13px;font-weight:600;color:var(--red);">2.5</span></div></div></div>
     </div>
 
     <!-- ナレッジ -->
@@ -394,8 +398,8 @@ textarea{min-height:72px;resize:none;}
       <div style="font-size:12px;color:var(--text2);background:var(--bg3);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:12px;">
         <i class="ti ti-bulb" style="vertical-align:-2px;margin-right:4px;"></i>付属品管理（平均3.3）のナレッジ追加を推奨しています
       </div>
-      <div class="knowledge-item"><div class="knowledge-tag">家電 / 冷蔵庫</div><div class="knowledge-title">冷蔵庫の臭い取り・内部クリーニング手順</div><div class="knowledge-meta">大宮営業所 · 2025/04/10 · 参考になった 18件</div></div>
-      <div class="knowledge-item"><div class="knowledge-tag">家具 / ベッド</div><div class="knowledge-title">折りたたみベッドのフレーム軋み対処法</div><div class="knowledge-meta">横浜営業所 · 2025/03/28 · 参考になった 12件</div></div>
+      <div class="knowledge-item"><div class="knowledge-tag">家電 / 冷蔵庫</div><div class="knowledge-title">冷蔵庫の臭い取り・内部クリーニング手順</div><div class="knowledge-meta">埼玉営業所 · 2025/04/10 · 参考になった 18件</div></div>
+      <div class="knowledge-item"><div class="knowledge-tag">家具 / ベッド</div><div class="knowledge-title">折りたたみベッドのフレーム軋み対処法</div><div class="knowledge-meta">南関東営業所 · 2025/03/28 · 参考になった 12件</div></div>
       <div class="knowledge-item"><div class="knowledge-tag">イベント用品</div><div class="knowledge-title">ポップコーンマシンの油汚れ除去チェックリスト</div><div class="knowledge-meta">麻布営業所 · 2025/05/01 · 参考になった 9件</div></div>
       <div class="knowledge-item"><div class="knowledge-tag">共通 / 付属品</div><div class="knowledge-title">付属品管理・チェックリスト標準テンプレート</div><div class="knowledge-meta">本部 · 2025/02/15 · 参考になった 34件</div></div>
     </div>
@@ -415,14 +419,32 @@ textarea{min-height:72px;resize:none;}
 </div>
 <script>
 const OFFICES={
-  '麻布営業所|sark-azabu':{name:'麻布営業所',pw:'sark-azabu'},
-  '大宮営業所|sark-omiya':{name:'大宮営業所',pw:'sark-omiya'},
-  '横浜営業所|sark-yokohama':{name:'横浜営業所',pw:'sark-yokohama'},
   '札幌営業所|sark-sapporo':{name:'札幌営業所',pw:'sark-sapporo'},
+  '盛岡営業所|sark-morioka':{name:'盛岡営業所',pw:'sark-morioka'},
   '仙台営業所|sark-sendai':{name:'仙台営業所',pw:'sark-sendai'},
+  'いわき営業所|sark-iwaki':{name:'いわき営業所',pw:'sark-iwaki'},
+  '新潟営業所|sark-niigata':{name:'新潟営業所',pw:'sark-niigata'},
+  '北関東営業所|sark-kitkanto':{name:'北関東営業所',pw:'sark-kitkanto'},
+  '埼玉営業所|sark-saitama':{name:'埼玉営業所',pw:'sark-saitama'},
+  '東関東営業所|sark-higkanto':{name:'東関東営業所',pw:'sark-higkanto'},
+  '東京営業所|sark-tokyo':{name:'東京営業所',pw:'sark-tokyo'},
+  '西関東営業所|sark-nishkanto':{name:'西関東営業所',pw:'sark-nishkanto'},
+  '麻布営業所|sark-azabu':{name:'麻布営業所',pw:'sark-azabu'},
+  '南関東営業所|sark-minamikanto':{name:'南関東営業所',pw:'sark-minamikanto'},
+  '静岡営業所|sark-shizuoka':{name:'静岡営業所',pw:'sark-shizuoka'},
   '名古屋営業所|sark-nagoya':{name:'名古屋営業所',pw:'sark-nagoya'},
-  '大阪営業所|sark-osaka':{name:'大阪営業所',pw:'sark-osaka'},
+  '滋賀営業所|sark-shiga':{name:'滋賀営業所',pw:'sark-shiga'},
+  '関西営業所|sark-kansai':{name:'関西営業所',pw:'sark-kansai'},
+  '兵庫営業所|sark-hyogo':{name:'兵庫営業所',pw:'sark-hyogo'},
+  '広島営業所|sark-hiroshima':{name:'広島営業所',pw:'sark-hiroshima'},
+  '四国営業所|sark-shikoku':{name:'四国営業所',pw:'sark-shikoku'},
   '福岡営業所|sark-fukuoka':{name:'福岡営業所',pw:'sark-fukuoka'},
+  '南九州営業所|sark-minamikyushu':{name:'南九州営業所',pw:'sark-minamikyushu'},
+  '北関東物流センター|sark-kitlogistics':{name:'北関東物流センター',pw:'sark-kitlogistics'},
+  'SOKOPLUSいわき|sark-sokoiwaki':{name:'SOKOPLUSいわき',pw:'sark-sokoiwaki'},
+  'SOKO PLUS千葉|sark-sokochiba':{name:'SOKO PLUS千葉',pw:'sark-sokochiba'},
+  'SOKO PLUS奈良|sark-sokonara':{name:'SOKO PLUS奈良',pw:'sark-sokonara'},
+  'SOKO PLUS岡山|sark-sokookayama':{name:'SOKO PLUS岡山',pw:'sark-sokookayama'},
 };
 function doLogin(){
   const sel=document.getElementById('login-office').value;
