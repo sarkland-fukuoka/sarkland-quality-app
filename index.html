@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>SARKLAND 品質管理アプリ</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#f5f5f7;--bg2:#ffffff;--bg3:#ebebeb;
+  --text:#1a1a1a;--text2:#6e6e73;
+  --border:#d2d2d7;--border2:#e5e5ea;
+  --purple:#534AB7;--purple-light:#EEEDFE;--purple-dark:#3C3489;
+  --green:#0F6E56;--green-light:#E1F5EE;
+  --orange:#EF9F27;--orange-light:#FAEEDA;
+  --red:#A32D2D;--red-light:#FCEBEB;
+  --radius:12px;--radius-sm:8px;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Yu Gothic',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+.phone{max-width:390px;margin:0 auto;background:var(--bg);min-height:100vh;display:flex;flex-direction:column;position:relative;}
+/* Topbar */
+.topbar{background:var(--bg2);border-bottom:0.5px solid var(--border2);padding:14px 16px 10px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.topbar-left{display:flex;align-items:center;gap:10px;}
+.topbar-title{font-size:17px;font-weight:600;}
+.topbar-sub{font-size:12px;color:var(--purple);font-weight:500;margin-top:1px;}
+.topbar-actions{display:flex;align-items:center;gap:14px;}
+.icon-btn{background:none;border:none;cursor:pointer;color:var(--text2);padding:0;display:flex;align-items:center;}
+.notif-wrap{position:relative;}
+.notif-dot{width:8px;height:8px;background:#E24B4A;border-radius:50%;position:absolute;top:-1px;right:-1px;display:none;}
+/* Content */
+.content{flex:1;padding:12px 16px 90px;overflow-y:auto;}
+.page{display:none;}.page.active{display:block;}
+/* Bottom Nav */
+.bottomnav{background:var(--bg2);border-top:0.5px solid var(--border2);display:flex;padding:8px 0 20px;position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:390px;z-index:100;}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:4px 0;color:var(--text2);font-size:10px;background:none;border:none;-webkit-tap-highlight-color:transparent;position:relative;}
+.nav-btn i{font-size:22px;}
+.nav-btn.active{color:var(--purple);}
+.nav-dot{width:6px;height:6px;background:#E24B4A;border-radius:50%;position:absolute;top:2px;right:calc(50% - 14px);display:none;}
+/* Cards */
+.card{background:var(--bg2);border:0.5px solid var(--border2);border-radius:var(--radius);padding:14px 16px;margin-bottom:10px;}
+.card-title{font-size:13px;font-weight:600;color:var(--text2);margin-bottom:12px;}
+.section-label{font-size:11px;font-weight:600;color:var(--text2);letter-spacing:.5px;text-transform:uppercase;margin:16px 0 6px;}
+/* Form */
+.field-group{margin-bottom:12px;}.field-group:last-child{margin-bottom:0;}
+.field-label{font-size:12px;color:var(--text2);margin-bottom:5px;font-weight:500;}
+select,input,textarea{font-family:inherit;font-size:15px;width:100%;background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;color:var(--text);-webkit-appearance:none;}
+select:focus,input:focus,textarea:focus{outline:2px solid var(--purple);border-color:transparent;}
+textarea{min-height:72px;resize:none;}
+/* Metrics */
+.metric-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+.metric{background:var(--bg2);border:0.5px solid var(--border2);border-radius:var(--radius);padding:14px;}
+.metric-val{font-size:26px;font-weight:600;}
+.metric-val.good{color:var(--green);}
+.metric-val.warn{color:#854F0B;}
+.metric-lbl{font-size:11px;color:var(--text2);margin-top:3px;}
+/* Progress */
+.prog-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.prog-lbl{font-size:13px;color:var(--text2);width:68px;flex-shrink:0;}
+.prog-track{flex:1;height:6px;background:var(--bg3);border-radius:3px;}
+.prog-fill{height:6px;border-radius:3px;background:var(--purple);}
+/* Stars */
+.eval-item{padding:14px 0;border-bottom:0.5px solid var(--border2);}
+.eval-item:last-child{border-bottom:none;padding-bottom:0;}
+.eval-item:first-child{padding-top:0;}
+.eval-name{font-size:15px;font-weight:600;margin-bottom:2px;}
+.eval-hint{font-size:12px;color:var(--text2);margin-bottom:10px;}
+.star-row{display:flex;gap:8px;}
+.star{font-size:36px;cursor:pointer;color:var(--border);line-height:1;-webkit-tap-highlight-color:transparent;transition:color .1s;}
+.star.on{color:var(--orange);}
+/* Score */
+.score-bar{background:var(--purple-light);border-radius:var(--radius);padding:14px 16px;margin-bottom:10px;display:none;align-items:center;gap:14px;}
+.score-num{font-size:40px;font-weight:700;line-height:1;min-width:56px;color:var(--purple);}
+.score-num.good{color:var(--green);}
+.score-num.mid{color:#854F0B;}
+.score-num.bad{color:var(--red);}
+.score-stars{font-size:18px;color:var(--orange);letter-spacing:2px;}
+.score-label{font-size:12px;color:var(--text2);margin-top:2px;}
+/* Badges */
+.badge{display:inline-block;font-size:12px;padding:3px 10px;border-radius:20px;font-weight:600;}
+.badge-good{background:var(--green-light);color:var(--green);}
+.badge-mid{background:var(--orange-light);color:#854F0B;}
+.badge-bad{background:var(--red-light);color:var(--red);}
+/* Flags */
+.flags{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.flag-btn{display:flex;align-items:center;gap:8px;padding:12px;border:0.5px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;font-size:13px;font-weight:500;color:var(--text2);background:var(--bg);-webkit-tap-highlight-color:transparent;font-family:inherit;}
+.flag-btn i{font-size:20px;}
+.flag-btn.active{border-color:var(--purple);background:var(--purple-light);color:var(--purple-dark);}
+/* Camera */
+.camera-area{border:2px dashed var(--border);border-radius:var(--radius);padding:24px;text-align:center;cursor:pointer;background:var(--bg);margin-bottom:10px;-webkit-tap-highlight-color:transparent;}
+.camera-area i{font-size:40px;color:var(--text2);display:block;margin-bottom:8px;}
+.camera-area span{font-size:14px;color:var(--text2);}
+.photo-grid{display:none;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
+.photo-thumb{border-radius:var(--radius-sm);overflow:hidden;aspect-ratio:1;background:var(--bg3);position:relative;}
+.photo-thumb img{width:100%;height:100%;object-fit:cover;}
+.photo-remove{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.55);border:none;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#fff;font-size:14px;}
+/* Buttons */
+.primary-btn{width:100%;padding:16px;background:var(--purple);color:#fff;border:none;border-radius:var(--radius);font-size:16px;font-weight:600;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;margin-bottom:8px;}
+.primary-btn:active{background:var(--purple-dark);}
+/* History */
+.hist-item{background:var(--bg2);border:0.5px solid var(--border2);border-radius:var(--radius);padding:12px 14px;margin-bottom:8px;}
+.hist-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;}
+.hist-name{font-size:14px;font-weight:600;}
+.hist-meta{font-size:12px;color:var(--text2);}
+/* Ranking */
+.rank-item{background:var(--bg2);border:0.5px solid var(--border2);border-radius:var(--radius);padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;}
+.rank-num{font-size:13px;color:var(--text2);width:20px;text-align:center;flex-shrink:0;font-weight:600;}
+.rank-info{flex:1;}
+.rank-name{font-size:14px;font-weight:600;margin-bottom:5px;}
+.rank-bar-wrap{display:flex;align-items:center;gap:8px;}
+.rank-track{flex:1;height:5px;background:var(--bg3);border-radius:3px;}
+.rank-fill{height:5px;border-radius:3px;}
+/* Knowledge */
+.knowledge-item{background:var(--bg2);border:0.5px solid var(--border2);border-radius:var(--radius);padding:12px 14px;margin-bottom:8px;}
+.knowledge-tag{font-size:11px;background:var(--purple-light);color:var(--purple);padding:2px 10px;border-radius:20px;display:inline-block;margin-bottom:6px;font-weight:600;}
+.knowledge-title{font-size:14px;font-weight:600;margin-bottom:3px;}
+.knowledge-meta{font-size:12px;color:var(--text2);}
+/* Notifications */
+.notif-item{padding:14px;border-bottom:0.5px solid var(--border2);display:flex;gap:12px;align-items:flex-start;}
+.notif-item:last-child{border-bottom:none;}
+.notif-icon{width:40px;height:40px;border-radius:50%;background:var(--purple-light);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.notif-icon i{font-size:20px;color:var(--purple);}
+.notif-icon.warn{background:var(--orange-light);}.notif-icon.warn i{color:#854F0B;}
+.notif-icon.ok{background:var(--green-light);}.notif-icon.ok i{color:var(--green);}
+.notif-title{font-size:14px;font-weight:600;margin-bottom:2px;}
+.notif-body{font-size:13px;color:var(--text2);}
+.notif-time{font-size:11px;color:var(--text2);margin-top:3px;}
+/* Success overlay */
+.success-overlay{display:none;position:absolute;inset:0;background:var(--bg2);z-index:200;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:32px;}
+.success-overlay.show{display:flex;}
+.flow-box{border:0.5px solid var(--border2);border-radius:var(--radius);padding:12px 16px;display:flex;align-items:center;gap:12px;width:100%;background:var(--bg);}
+/* Login */
+.login-screen{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:32px 24px;gap:14px;background:var(--bg);}
+.login-logo{text-align:center;padding-bottom:8px;}
+.login-logo-icon{width:80px;height:80px;background:var(--purple-light);border-radius:24px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:12px;}
+.login-title{font-size:26px;font-weight:700;}
+.login-sub{font-size:15px;color:var(--text2);margin-top:4px;}
+.pw-note{font-size:12px;color:var(--text2);background:var(--bg3);border-radius:var(--radius-sm);padding:10px 14px;}
+.err-msg{font-size:13px;color:var(--red);text-align:center;display:none;}
+.filter-row{display:flex;gap:8px;margin-bottom:12px;}
+.filter-row select{flex:1;}
+</style>
+</head>
+<body>
+<div class="phone" id="app">
+
+<!-- ログイン画面 -->
+<div id="screen-login">
+  <div class="login-screen">
+    <div class="login-logo">
+      <div class="login-logo-icon">
+        <svg width="52" height="42" viewBox="0 0 120 95" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M60 18 C60 18 50 8 42 12 C34 16 34 28 42 34 L60 50 L78 34 C86 28 86 16 78 12 C70 8 60 18 60 18 Z" stroke="#534AB7" stroke-width="5" stroke-linejoin="round" fill="none"/>
+          <rect x="10" y="50" width="58" height="30" rx="2" stroke="#534AB7" stroke-width="5" fill="none"/>
+          <path d="M68 62 L68 80 L108 80 L108 65 L95 50 L68 50 Z" stroke="#534AB7" stroke-width="5" stroke-linejoin="round" fill="none"/>
+          <path d="M72 54 L72 64 L100 64 L100 54 Z" stroke="#534AB7" stroke-width="3.5" fill="none"/>
+          <rect x="24" y="58" width="28" height="20" rx="2" stroke="#534AB7" stroke-width="3.5" fill="none"/>
+          <line x1="38" y1="58" x2="38" y2="78" stroke="#534AB7" stroke-width="2.5"/>
+          <line x1="24" y1="68" x2="52" y2="68" stroke="#534AB7" stroke-width="2.5"/>
+          <circle cx="28" cy="83" r="8" stroke="#534AB7" stroke-width="4.5" fill="none"/>
+          <circle cx="28" cy="83" r="3" fill="#534AB7"/>
+          <circle cx="88" cy="83" r="8" stroke="#534AB7" stroke-width="4.5" fill="none"/>
+          <circle cx="88" cy="83" r="3" fill="#534AB7"/>
+          <line x1="6" y1="91" x2="114" y2="91" stroke="#534AB7" stroke-width="3" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="login-title">SARKLAND</div>
+      <div class="login-sub">品質管理アプリ</div>
+    </div>
+    <div class="card">
+      <div class="field-group">
+        <div class="field-label">営業所</div>
+        <select id="login-office">
+          <option value="">-- 選択してください --</option>
+          <option value="麻布営業所|sark-azabu">麻布営業所</option>
+          <option value="大宮営業所|sark-omiya">大宮営業所</option>
+          <option value="横浜営業所|sark-yokohama">横浜営業所</option>
+          <option value="札幌営業所|sark-sapporo">札幌営業所</option>
+          <option value="仙台営業所|sark-sendai">仙台営業所</option>
+          <option value="名古屋営業所|sark-nagoya">名古屋営業所</option>
+          <option value="大阪営業所|sark-osaka">大阪営業所</option>
+          <option value="福岡営業所|sark-fukuoka">福岡営業所</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <div class="field-label">担当者名（現場スタッフ）</div>
+        <input type="text" id="login-name" placeholder="例：田中 太郎">
+      </div>
+      <div class="field-group">
+        <div class="field-label">営業所パスワード</div>
+        <input type="password" id="login-pw" placeholder="所長にお問い合わせください">
+      </div>
+    </div>
+    <div class="pw-note">
+      <i class="ti ti-info-circle" style="vertical-align:-2px;margin-right:4px;"></i>
+      パスワードは営業所ごとに設定されています。所長にお問い合わせください。
+    </div>
+    <button class="primary-btn" style="margin-bottom:0;" onclick="doLogin()">ログイン</button>
+    <div class="err-msg" id="login-err">営業所・担当者名・パスワードを正しく入力してください</div>
+  </div>
+</div>
+
+<!-- メインアプリ -->
+<div id="screen-main" style="display:none;flex-direction:column;flex:1;">
+  <div class="topbar">
+    <div class="topbar-left">
+      <svg width="26" height="20" viewBox="0 0 120 95" fill="none">
+        <path d="M60 18 C60 18 50 8 42 12 C34 16 34 28 42 34 L60 50 L78 34 C86 28 86 16 78 12 C70 8 60 18 60 18 Z" stroke="#534AB7" stroke-width="7" stroke-linejoin="round" fill="none"/>
+        <rect x="10" y="50" width="58" height="30" rx="2" stroke="#534AB7" stroke-width="6" fill="none"/>
+        <path d="M68 62 L68 80 L108 80 L108 65 L95 50 L68 50 Z" stroke="#534AB7" stroke-width="6" stroke-linejoin="round" fill="none"/>
+        <circle cx="28" cy="83" r="8" stroke="#534AB7" stroke-width="6" fill="none"/>
+        <circle cx="88" cy="83" r="8" stroke="#534AB7" stroke-width="6" fill="none"/>
+      </svg>
+      <div>
+        <div class="topbar-title" id="page-title">ダッシュボード</div>
+        <div class="topbar-sub" id="page-sub"></div>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <div class="notif-wrap" onclick="switchPage('notif',document.getElementById('nav-notif'),'通知','評価結果の受信ボックス');clearNotif()" style="cursor:pointer;">
+        <i class="ti ti-bell" style="font-size:22px;color:#6e6e73;"></i>
+        <div class="notif-dot" id="notif-dot"></div>
+      </div>
+      <button class="icon-btn" onclick="doLogout()"><i class="ti ti-logout" style="font-size:20px;"></i></button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ダッシュボード -->
+    <div class="page active" id="pg-home">
+      <div style="font-size:14px;margin-bottom:14px;">
+        <span id="disp-office" style="color:var(--text2);"></span>　<span id="disp-name" style="font-weight:600;"></span>さん、お疲れ様です
+      </div>
+      <div class="metric-grid">
+        <div class="metric"><div class="metric-val">142</div><div class="metric-lbl">今月の評価件数</div></div>
+        <div class="metric"><div class="metric-val good">3.8</div><div class="metric-lbl">全社平均スコア</div></div>
+        <div class="metric"><div class="metric-val warn">12</div><div class="metric-lbl">要改善フラグ</div></div>
+        <div class="metric"><div class="metric-val">23/23</div><div class="metric-lbl">参加営業所</div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">評価項目別 平均スコア（全社）</div>
+        <div class="prog-row"><div class="prog-lbl">清潔感</div><div class="prog-track"><div class="prog-fill" style="width:82%;"></div></div><span style="font-size:13px;min-width:28px;">4.1</span></div>
+        <div class="prog-row"><div class="prog-lbl">外観・傷</div><div class="prog-track"><div class="prog-fill" style="width:70%;"></div></div><span style="font-size:13px;min-width:28px;">3.5</span></div>
+        <div class="prog-row"><div class="prog-lbl">付属品</div><div class="prog-track"><div class="prog-fill" style="width:66%;background:var(--red);"></div></div><span style="font-size:13px;min-width:28px;color:var(--red);">3.3</span></div>
+        <div class="prog-row"><div class="prog-lbl">梱包</div><div class="prog-track"><div class="prog-fill" style="width:74%;"></div></div><span style="font-size:13px;min-width:28px;">3.7</span></div>
+      </div>
+      <div style="font-size:13px;font-weight:600;color:var(--text2);margin:4px 0 8px;">⚠ 要注意の営業所</div>
+      <div class="hist-item"><div class="hist-top"><span class="hist-name">福岡営業所</span><span class="badge badge-bad">2.5</span></div><div class="hist-meta">外観の傷・汚れ — 先月比 ▼0.9</div></div>
+      <div class="hist-item"><div class="hist-top"><span class="hist-name">仙台営業所</span><span class="badge badge-mid">2.9</span></div><div class="hist-meta">クリーニング不十分 — 先月比 ▼0.6</div></div>
+    </div>
+
+    <!-- 入庫チェック -->
+    <div class="page" id="pg-check" style="position:relative;">
+      <div id="check-success" class="success-overlay">
+        <i class="ti ti-circle-check" style="font-size:64px;color:var(--green);"></i>
+        <div style="font-size:20px;font-weight:700;text-align:center;">送信完了！</div>
+        <div style="font-size:14px;color:var(--text2);text-align:center;">送り元営業所へ通知しました</div>
+        <div style="width:100%;margin-top:4px;">
+          <div class="flow-box" style="margin-bottom:8px;">
+            <i class="ti ti-device-mobile" style="font-size:22px;color:var(--purple);flex-shrink:0;"></i>
+            <div><div style="font-size:13px;font-weight:600;">現場スタッフ（アプリ内通知）</div><div style="font-size:12px;color:var(--text2);" id="notif-to-app">送り元のアプリに届きます</div></div>
+          </div>
+          <div class="flow-box">
+            <i class="ti ti-mail" style="font-size:22px;color:var(--green);flex-shrink:0;"></i>
+            <div><div style="font-size:13px;font-weight:600;">所長へメール通知</div><div style="font-size:12px;color:var(--text2);" id="notif-to-mail">所長に詳細レポートを送信</div></div>
+          </div>
+        </div>
+        <button class="primary-btn" style="margin-top:8px;margin-bottom:0;" onclick="resetCheck()">続けて入力する</button>
+      </div>
+
+      <div class="section-label">基本情報</div>
+      <div class="card">
+        <div class="field-group"><div class="field-label">送り元営業所</div>
+          <select id="check-from">
+            <option value="">-- 選択 --</option>
+            <option>麻布営業所</option><option>大宮営業所</option><option>横浜営業所</option>
+            <option>札幌営業所</option><option>仙台営業所</option><option>名古屋営業所</option>
+            <option>大阪営業所</option><option>福岡営業所</option>
+          </select>
+        </div>
+        <div class="field-group"><div class="field-label">カテゴリ</div>
+          <select><option>家具</option><option>家電</option><option>イベント用品</option><option>その他</option></select>
+        </div>
+        <div class="field-group"><div class="field-label">商品名 / 管理番号</div>
+          <input type="text" placeholder="例：冷蔵庫 80L  #A-042">
+        </div>
+      </div>
+
+      <div class="section-label">評価（タップして採点）</div>
+      <div class="card">
+        <div class="eval-item">
+          <div class="eval-name"><i class="ti ti-sparkles" style="font-size:15px;vertical-align:-2px;margin-right:5px;"></i>清潔感・クリーニング</div>
+          <div class="eval-hint">汚れ・臭い・クリーニングの丁寧さ</div>
+          <div class="star-row" data-key="c1"></div>
+        </div>
+        <div class="eval-item">
+          <div class="eval-name"><i class="ti ti-eye" style="font-size:15px;vertical-align:-2px;margin-right:5px;"></i>外観・傷・汚れ</div>
+          <div class="eval-hint">目に見える傷・凹み・変色など</div>
+          <div class="star-row" data-key="c2"></div>
+        </div>
+        <div class="eval-item">
+          <div class="eval-name"><i class="ti ti-package" style="font-size:15px;vertical-align:-2px;margin-right:5px;"></i>付属品・部品の完備</div>
+          <div class="eval-hint">リモコン・ケーブル・取説など</div>
+          <div class="star-row" data-key="c3"></div>
+        </div>
+        <div class="eval-item">
+          <div class="eval-name"><i class="ti ti-box" style="font-size:15px;vertical-align:-2px;margin-right:5px;"></i>梱包・養生の状態</div>
+          <div class="eval-hint">輸送中の保護・梱包の丁寧さ</div>
+          <div class="star-row" data-key="c4"></div>
+        </div>
+      </div>
+
+      <div class="score-bar" id="score-bar">
+        <div><div class="score-stars" id="score-stars"></div><div class="score-label">総合スコア</div></div>
+        <div class="score-num" id="score-num"></div>
+        <div id="score-badge"></div>
+      </div>
+
+      <div class="section-label">フラグ（複数選択可）</div>
+      <div class="card">
+        <div class="flags">
+          <button class="flag-btn" onclick="toggleFlag(this)"><i class="ti ti-package-off"></i>付属品欠品</button>
+          <button class="flag-btn" onclick="toggleFlag(this)"><i class="ti ti-tool"></i>要修理</button>
+          <button class="flag-btn" onclick="toggleFlag(this)"><i class="ti ti-phone-outgoing"></i>要連絡</button>
+          <button class="flag-btn" onclick="toggleFlag(this)"><i class="ti ti-alert-triangle"></i>緊急対応</button>
+        </div>
+      </div>
+
+      <div class="section-label">写真</div>
+      <div id="photo-grid" class="photo-grid"></div>
+      <input type="file" id="camera-input" accept="image/*" capture="environment" style="display:none;" onchange="handlePhoto(event)">
+      <div class="camera-area" onclick="document.getElementById('camera-input').click()">
+        <i class="ti ti-camera"></i>
+        <span>タップして撮影 / 画像を選択</span>
+      </div>
+
+      <div class="section-label">コメント（任意）</div>
+      <div class="card"><textarea placeholder="気になった点・状態メモなど"></textarea></div>
+      <button class="primary-btn" onclick="doSubmit()">評価を送信する</button>
+      <div style="height:8px;"></div>
+    </div>
+
+    <!-- 通知 -->
+    <div class="page" id="pg-notif">
+      <div class="card" style="padding:0;overflow:hidden;">
+        <div class="notif-item">
+          <div class="notif-icon warn"><i class="ti ti-alert-triangle"></i></div>
+          <div><div class="notif-title">札幌営業所から評価が届きました</div><div class="notif-body">冷蔵庫 80L #A-042 — ★★☆☆☆・付属品欠品</div><div class="notif-time">5分前 · 所長にもメール送信済み</div></div>
+        </div>
+        <div class="notif-item">
+          <div class="notif-icon ok"><i class="ti ti-circle-check"></i></div>
+          <div><div class="notif-title">大宮営業所から評価が届きました</div><div class="notif-body">ポップコーンマシン #P-07 — ★★★★★・良好</div><div class="notif-time">2時間前 · 所長にもメール送信済み</div></div>
+        </div>
+        <div class="notif-item">
+          <div class="notif-icon"><i class="ti ti-clipboard-check"></i></div>
+          <div><div class="notif-title">横浜営業所から評価が届きました</div><div class="notif-body">シングルベッド #B-23 — ★★★★☆</div><div class="notif-time">昨日 · 所長にもメール送信済み</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 履歴 -->
+    <div class="page" id="pg-hist">
+      <div class="filter-row">
+        <select><option>全営業所</option><option>札幌</option><option>仙台</option><option>福岡</option></select>
+        <select><option>全スコア</option><option>★1-2</option><option>★3</option><option>★4-5</option></select>
+      </div>
+      <div class="hist-item"><div class="hist-top"><span class="hist-name">折りたたみテーブル #T-18</span><span class="badge badge-mid">★★★</span></div><div class="hist-meta">福岡→麻布 · 家具 · 5/21 · 田中</div></div>
+      <div class="hist-item"><div class="hist-top"><span class="hist-name">冷蔵庫 80L #A-042</span><span class="badge badge-bad">★★</span></div><div class="hist-meta">札幌→仙台 · 家電 · 5/20 · 佐藤 · <span style="color:var(--red);">欠品</span></div></div>
+      <div class="hist-item"><div class="hist-top"><span class="hist-name">ポップコーンマシン #P-07</span><span class="badge badge-good">★★★★★</span></div><div class="hist-meta">大宮→横浜 · イベント · 5/20 · 鈴木</div></div>
+      <div class="hist-item"><div class="hist-top"><span class="hist-name">シングルベッド #B-23</span><span class="badge badge-good">★★★★</span></div><div class="hist-meta">横浜→麻布 · 家具 · 5/19 · 田中</div></div>
+      <div class="hist-item"><div class="hist-top"><span class="hist-name">シーリングライト #L-09</span><span class="badge badge-mid">★★★</span></div><div class="hist-meta">仙台→大宮 · 家電 · 5/18 · 渡辺 · <span style="color:#854F0B;">要修理</span></div></div>
+    </div>
+
+    <!-- ランキング -->
+    <div class="page" id="pg-rank">
+      <div style="font-size:12px;color:var(--text2);margin-bottom:10px;">直近30日 · 受取側からの評価平均</div>
+      <div class="rank-item"><div class="rank-num">1</div><div class="rank-info"><div class="rank-name">🥇 大宮営業所</div><div class="rank-bar-wrap"><div class="rank-track"><div class="rank-fill" style="width:92%;background:var(--green);"></div></div><span style="font-size:13px;font-weight:600;color:var(--green);">4.6</span></div></div></div>
+      <div class="rank-item"><div class="rank-num">2</div><div class="rank-info"><div class="rank-name">🥈 横浜営業所</div><div class="rank-bar-wrap"><div class="rank-track"><div class="rank-fill" style="width:86%;background:var(--green);"></div></div><span style="font-size:13px;font-weight:600;color:var(--green);">4.3</span></div></div></div>
+      <div class="rank-item"><div class="rank-num">3</div><div class="rank-info"><div class="rank-name">🥉 麻布営業所</div><div class="rank-bar-wrap"><div class="rank-track"><div class="rank-fill" style="width:82%;background:var(--purple);"></div></div><span style="font-size:13px;font-weight:600;">4.1</span></div></div></div>
+      <div class="rank-item"><div class="rank-num">4</div><div class="rank-info"><div class="rank-name">名古屋営業所</div><div class="rank-bar-wrap"><div class="rank-track"><div class="rank-fill" style="width:78%;background:var(--purple);"></div></div><span style="font-size:13px;font-weight:600;">3.9</span></div></div></div>
+      <div class="rank-item"><div class="rank-num">5</div><div class="rank-info"><div class="rank-name">大阪営業所</div><div class="rank-bar-wrap"><div class="rank-track"><div class="rank-fill" style="width:74%;background:var(--purple);"></div></div><span style="font-size:13px;font-weight:600;">3.7</span></div></div></div>
+      <div class="rank-item"><div class="rank-num" style="color:#854F0B;">21</div><div class="rank-info"><div class="rank-name">札幌営業所</div><div class="rank-bar-wrap"><div class="rank-track"><div class="rank-fill" style="width:62%;background:#854F0B;"></div></div><span style="font-size:13px;font-weight:600;color:#854F0B;">3.1</span></div></div></div>
+      <div class="rank-item"><div class="rank-num" style="color:#854F0B;">22</div><div class="rank-info"><div class="rank-name">仙台営業所</div><div class="rank-bar-wrap"><div class="rank-track"><div class="rank-fill" style="width:58%;background:#854F0B;"></div></div><span style="font-size:13px;font-weight:600;color:#854F0B;">2.9</span></div></div></div>
+      <div class="rank-item"><div class="rank-num" style="color:var(--red);">23</div><div class="rank-info"><div class="rank-name">福岡営業所</div><div class="rank-bar-wrap"><div class="rank-track"><div class="rank-fill" style="width:50%;background:var(--red);"></div></div><span style="font-size:13px;font-weight:600;color:var(--red);">2.5</span></div></div></div>
+    </div>
+
+    <!-- ナレッジ -->
+    <div class="page" id="pg-knowledge">
+      <div style="display:flex;gap:8px;margin-bottom:12px;">
+        <input type="text" placeholder="キーワードで検索..." style="flex:1;">
+        <button style="padding:0 16px;background:var(--purple);color:#fff;border:none;border-radius:var(--radius-sm);font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;"><i class="ti ti-plus"></i> 追加</button>
+      </div>
+      <div style="font-size:12px;color:var(--text2);background:var(--bg3);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:12px;">
+        <i class="ti ti-bulb" style="vertical-align:-2px;margin-right:4px;"></i>付属品管理（平均3.3）のナレッジ追加を推奨しています
+      </div>
+      <div class="knowledge-item"><div class="knowledge-tag">家電 / 冷蔵庫</div><div class="knowledge-title">冷蔵庫の臭い取り・内部クリーニング手順</div><div class="knowledge-meta">大宮営業所 · 2025/04/10 · 参考になった 18件</div></div>
+      <div class="knowledge-item"><div class="knowledge-tag">家具 / ベッド</div><div class="knowledge-title">折りたたみベッドのフレーム軋み対処法</div><div class="knowledge-meta">横浜営業所 · 2025/03/28 · 参考になった 12件</div></div>
+      <div class="knowledge-item"><div class="knowledge-tag">イベント用品</div><div class="knowledge-title">ポップコーンマシンの油汚れ除去チェックリスト</div><div class="knowledge-meta">麻布営業所 · 2025/05/01 · 参考になった 9件</div></div>
+      <div class="knowledge-item"><div class="knowledge-tag">共通 / 付属品</div><div class="knowledge-title">付属品管理・チェックリスト標準テンプレート</div><div class="knowledge-meta">本部 · 2025/02/15 · 参考になった 34件</div></div>
+    </div>
+
+  </div>
+
+  <div class="bottomnav">
+    <button class="nav-btn active" id="nav-home" onclick="switchPage('home',this,'ダッシュボード','')"><i class="ti ti-layout-dashboard"></i>ホーム</button>
+    <button class="nav-btn" id="nav-check" onclick="switchPage('check',this,'入庫チェック','商品を受け取ったとき')"><i class="ti ti-clipboard-check"></i>入庫</button>
+    <button class="nav-btn" id="nav-notif" onclick="switchPage('notif',this,'通知','評価結果の受信ボックス');clearNotif()" style="position:relative;"><i class="ti ti-bell"></i><div class="nav-dot" id="nav-notif-dot"></div>通知</button>
+    <button class="nav-btn" id="nav-hist" onclick="switchPage('hist',this,'評価履歴','過去の入庫評価')"><i class="ti ti-list"></i>履歴</button>
+    <button class="nav-btn" id="nav-rank" onclick="switchPage('rank',this,'ランキング','営業所別スコア')"><i class="ti ti-medal"></i>順位</button>
+    <button class="nav-btn" id="nav-knowledge" onclick="switchPage('knowledge',this,'ナレッジベース','メンテナンスノウハウ共有')"><i class="ti ti-book"></i>ナレッジ</button>
+  </div>
+</div>
+
+</div>
+<script>
+const OFFICES={
+  '麻布営業所|sark-azabu':{name:'麻布営業所',pw:'sark-azabu'},
+  '大宮営業所|sark-omiya':{name:'大宮営業所',pw:'sark-omiya'},
+  '横浜営業所|sark-yokohama':{name:'横浜営業所',pw:'sark-yokohama'},
+  '札幌営業所|sark-sapporo':{name:'札幌営業所',pw:'sark-sapporo'},
+  '仙台営業所|sark-sendai':{name:'仙台営業所',pw:'sark-sendai'},
+  '名古屋営業所|sark-nagoya':{name:'名古屋営業所',pw:'sark-nagoya'},
+  '大阪営業所|sark-osaka':{name:'大阪営業所',pw:'sark-osaka'},
+  '福岡営業所|sark-fukuoka':{name:'福岡営業所',pw:'sark-fukuoka'},
+};
+function doLogin(){
+  const sel=document.getElementById('login-office').value;
+  const name=document.getElementById('login-name').value.trim();
+  const pw=document.getElementById('login-pw').value.trim();
+  const err=document.getElementById('login-err');
+  if(!sel||!name||!pw){err.style.display='block';return;}
+  const office=OFFICES[sel];
+  if(!office||pw!==office.pw){err.style.display='block';err.textContent='パスワードが正しくありません';return;}
+  err.style.display='none';
+  document.getElementById('disp-office').textContent=office.name;
+  document.getElementById('disp-name').textContent=name;
+  document.getElementById('page-sub').textContent=office.name;
+  document.getElementById('screen-login').style.display='none';
+  document.getElementById('screen-main').style.display='flex';
+}
+function doLogout(){
+  document.getElementById('screen-main').style.display='none';
+  document.getElementById('screen-login').style.display='block';
+  document.getElementById('login-pw').value='';
+}
+function switchPage(id,el,title,sub){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('pg-'+id).classList.add('active');
+  el.classList.add('active');
+  document.getElementById('page-title').textContent=title;
+  document.getElementById('page-sub').textContent=sub||document.getElementById('disp-office').textContent;
+}
+function clearNotif(){
+  document.getElementById('notif-dot').style.display='none';
+  document.getElementById('nav-notif-dot').style.display='none';
+}
+document.querySelectorAll('.star-row').forEach(row=>{
+  for(let i=1;i<=5;i++){
+    const s=document.createElement('span');
+    s.className='star';s.textContent='★';s.dataset.v=i;
+    s.onclick=function(){
+      const v=parseInt(this.dataset.v);
+      row.dataset.score=v;
+      row.querySelectorAll('.star').forEach((st,idx)=>st.classList.toggle('on',idx<v));
+      updateScore();
+    };
+    row.appendChild(s);
+  }
+});
+function updateScore(){
+  const rows=document.querySelectorAll('#pg-check .star-row');
+  let sum=0,n=0;
+  rows.forEach(r=>{if(r.dataset.score){sum+=parseInt(r.dataset.score);n++;}});
+  const bar=document.getElementById('score-bar');
+  if(!n){bar.style.display='none';return;}
+  const avg=sum/n;
+  bar.style.display='flex';
+  const f=Math.round(avg);
+  document.getElementById('score-stars').textContent='★'.repeat(f)+'☆'.repeat(5-f);
+  const ne=document.getElementById('score-num');
+  ne.textContent=avg.toFixed(1);
+  ne.className='score-num '+(avg>=4?'good':avg>=3?'mid':'bad');
+  const be=document.getElementById('score-badge');
+  if(avg>=4)be.innerHTML='<span class="badge badge-good">良好</span>';
+  else if(avg>=3)be.innerHTML='<span class="badge badge-mid">普通</span>';
+  else be.innerHTML='<span class="badge badge-bad">要改善</span>';
+}
+function toggleFlag(btn){btn.classList.toggle('active');}
+let photos=[];
+function handlePhoto(e){
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(ev){photos.push(ev.target.result);renderPhotos();};
+  reader.readAsDataURL(file);e.target.value='';
+}
+function renderPhotos(){
+  const grid=document.getElementById('photo-grid');
+  if(!photos.length){grid.style.display='none';grid.innerHTML='';return;}
+  grid.style.display='grid';
+  grid.innerHTML=photos.map((src,i)=>
+    `<div class="photo-thumb"><img src="${src}" alt="写真${i+1}"><button class="photo-remove" onclick="removePhoto(${i})"><i class="ti ti-x" style="font-size:13px;"></i></button></div>`
+  ).join('');
+}
+function removePhoto(i){photos.splice(i,1);renderPhotos();}
+function doSubmit(){
+  const from=document.getElementById('check-from').value||'送り元営業所';
+  document.getElementById('notif-to-app').textContent=from+'のスタッフのアプリに届きます';
+  document.getElementById('notif-to-mail').textContent=from+'の所長宛に詳細レポートを送信';
+  document.getElementById('check-success').classList.add('show');
+  document.getElementById('notif-dot').style.display='block';
+  document.getElementById('nav-notif-dot').style.display='block';
+}
+function resetCheck(){
+  document.getElementById('check-success').classList.remove('show');
+  document.querySelectorAll('#pg-check .star-row').forEach(r=>{
+    delete r.dataset.score;
+    r.querySelectorAll('.star').forEach(s=>s.classList.remove('on'));
+  });
+  document.querySelectorAll('.flag-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('score-bar').style.display='none';
+  photos=[];renderPhotos();
+  document.getElementById('check-from').value='';
+}
+</script>
+</body>
+</html>
