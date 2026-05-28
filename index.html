@@ -268,13 +268,24 @@ textarea{min-height:72px;resize:none;}
         <button class="primary-btn" style="margin-top:8px;margin-bottom:0;" onclick="resetCheck()">続けて入力する</button>
       </div>
 
+      <!-- Step 1: 到着確認 -->
+      <div id="check-step1">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+          <div style="font-size:15px;font-weight:600;">Step 1：到着確認</div>
+          <div style="font-size:12px;color:var(--text2);">届いた商品にチェック</div>
+        </div>
+        <div id="arriving-list"><div class="loading">読み込み中...</div></div>
+        <div style="margin:14px 0 6px;border-top:0.5px solid var(--border2);padding-top:14px;font-size:15px;font-weight:600;">Step 2：状態評価</div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:12px;">到着確認した商品の品質を評価してください</div>
+      </div>
+
       <div class="section-label">基本情報</div>
       <div class="card">
         <div class="field-group"><div class="field-label">送り元営業所</div>
           <select id="check-from">
             <option value="">-- 選択 --</option>
             <option>札幌営業所</option><option>盛岡営業所</option><option>仙台営業所</option>
-            <option>いわき営業所</option><option>新潟営業所</option><option>北関東営業所</option>
+            <option>いわき営業所</option><option>北関東営業所</option><option>新潟営業所</option>
             <option>埼玉営業所</option><option>東関東営業所</option><option>東京営業所</option>
             <option>西関東営業所</option><option>麻布営業所</option><option>南関東営業所</option>
             <option>静岡営業所</option><option>名古屋営業所</option><option>滋賀営業所</option>
@@ -476,6 +487,16 @@ textarea{min-height:72px;resize:none;}
       <div style="height:8px;"></div>
     </div>
 
+    <!-- 移動履歴 -->
+    <div class="page" id="pg-move">
+      <!-- タブ切り替え -->
+      <div style="display:flex;gap:0;margin-bottom:12px;border:0.5px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;">
+        <button id="move-tab-out" onclick="switchMoveTab('out')" style="flex:1;padding:10px;background:var(--purple);color:#fff;border:none;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">📤 送り出した</button>
+        <button id="move-tab-in" onclick="switchMoveTab('in')" style="flex:1;padding:10px;background:var(--bg2);color:var(--text2);border:none;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">📥 届いた</button>
+      </div>
+      <div id="move-list"><div class="loading">読み込み中...</div></div>
+    </div>
+
   </div>
 
   <div class="bottomnav">
@@ -483,7 +504,7 @@ textarea{min-height:72px;resize:none;}
     <button class="nav-btn" id="nav-ship" onclick="switchPage('ship',this,'出庫登録','商品を送り出すとき')"><i class="ti ti-truck"></i>出庫</button>
     <button class="nav-btn" id="nav-check" onclick="switchPage('check',this,'入庫チェック','商品を受け取ったとき')"><i class="ti ti-clipboard-check"></i>入庫</button>
     <button class="nav-btn" id="nav-notif" onclick="switchPage('notif',this,'通知','出庫・評価の受信ボックス');clearNotif();loadNotifications()" style="position:relative;"><i class="ti ti-bell"></i><div class="nav-dot" id="nav-notif-dot"></div>通知</button>
-    <button class="nav-btn" id="nav-hist" onclick="switchPage('hist',this,'評価履歴','過去の入庫評価');loadHistory()"><i class="ti ti-list"></i>履歴</button>
+    <button class="nav-btn" id="nav-move" onclick="switchPage('move',this,'移動履歴','商品の移動記録');loadMove('out')"><i class="ti ti-arrows-transfer-up"></i>移動</button>
     <button class="nav-btn" id="nav-rank" onclick="switchPage('rank',this,'ランキング','営業所別スコア');loadRanking()"><i class="ti ti-medal"></i>順位</button>
   </div>
 </div>
@@ -592,6 +613,80 @@ function switchPage(id,el,title,sub){
   el.classList.add('active');
   document.getElementById('page-title').textContent=title;
   document.getElementById('page-sub').textContent=sub||currentOffice;
+  if(id==='check') loadArrivingList();
+}
+
+// 到着確認リスト読み込み
+async function loadArrivingList(){
+  if(!window.db) return;
+  const listEl=document.getElementById('arriving-list');
+  if(!listEl) return;
+  listEl.innerHTML='<div class="loading">読み込み中...</div>';
+  try{
+    const q=window.fsQuery(
+      window.fsCollection(window.db,'shipments'),
+      window.fsWhere('toOffice','==',currentOffice),
+      window.fsOrderBy('createdAt','desc'),
+      window.fsLimit(20)
+    );
+    const snap=await window.fsGetDocs(q);
+    const docs=snap.docs.map(d=>({id:d.id,...d.data()}));
+    const pending=docs.filter(d=>!d.arrived);
+    const arrived=docs.filter(d=>d.arrived);
+    if(docs.length===0){
+      listEl.innerHTML='<div style="font-size:13px;color:var(--text2);padding:8px 0;">到着予定の商品はありません</div>';
+      return;
+    }
+    let html='';
+    if(pending.length>0){
+      html+=pending.map(d=>`
+        <div class="hist-item" style="border-left:3px solid var(--orange);margin-bottom:8px;">
+          <div class="hist-top">
+            <span class="hist-name">${d.itemName||'商品名なし'} ×${d.quantity||1}</span>
+            <span style="font-size:11px;color:var(--text2);">到着予定：${d.arriveDate||'未定'}</span>
+          </div>
+          <div style="font-size:12px;color:var(--text2);margin-bottom:8px;">
+            コア：${d.coreNumber||'-'} · ${d.fromOffice||''}発 · ${d.carrier||''} ${d.trackingNumber||''}
+          </div>
+          <button onclick="confirmArrival('${d.id}','${(d.itemName||'').replace(/'/g,'').replace(/"/g,'')}','${d.fromOffice||''}')"
+            style="width:100%;padding:10px;background:var(--green);color:#fff;border:none;border-radius:var(--radius-sm);font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">
+            <i class="ti ti-check" style="vertical-align:-2px;margin-right:4px;"></i>受け取りました ✓
+          </button>
+        </div>`).join('');
+    } else {
+      html+='<div style="font-size:13px;color:var(--green);padding:6px 0;font-weight:600;">✅ すべて到着確認済みです</div>';
+    }
+    if(arrived.length>0){
+      html+=`<div style="font-size:12px;color:var(--text2);margin:8px 0 6px;padding-top:8px;border-top:0.5px solid var(--border2);">確認済み（直近${Math.min(arrived.length,3)}件）</div>`;
+      html+=arrived.slice(0,3).map(d=>`
+        <div style="padding:8px 12px;background:var(--bg3);border-radius:var(--radius-sm);margin-bottom:6px;opacity:0.8;">
+          <div style="font-size:13px;font-weight:600;">${d.itemName||''} ×${d.quantity||1} <span style="color:var(--green);font-size:12px;">✅確認済み</span></div>
+          <div style="font-size:12px;color:var(--text2);">コア：${d.coreNumber||'-'} · ${d.fromOffice||''}</div>
+        </div>`).join('');
+    }
+    listEl.innerHTML=html;
+  }catch(e){
+    listEl.innerHTML='<div style="font-size:13px;color:var(--text2);padding:8px 0;">到着予定の商品はありません</div>';
+  }
+}
+
+// 到着確認ボタン処理
+async function confirmArrival(shipId, itemName, fromOffice){
+  try{
+    const firestoreModule=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    const ref=firestoreModule.doc(window.db,'shipments',shipId);
+    await firestoreModule.updateDoc(ref,{
+      arrived:true,
+      arrivedAt:window.fsServerTimestamp(),
+      arrivedBy:currentName
+    });
+    showToast('✅ 到着確認しました！');
+    if(fromOffice) document.getElementById('check-from').value=fromOffice;
+    if(itemName) document.getElementById('check-item').value=itemName;
+    loadArrivingList();
+  }catch(e){
+    showToast('確認に失敗しました。もう一度お試しください。');
+  }
 }
 
 function clearNotif(){
@@ -809,6 +904,66 @@ function resetShip(){
   document.getElementById('ship-arrive').value='';
   document.getElementById('ship-staff').value='';
   document.getElementById('ship-note').value='';
+}
+
+// 移動履歴
+let currentMoveTab='out';
+function switchMoveTab(tab){
+  currentMoveTab=tab;
+  const btnOut=document.getElementById('move-tab-out');
+  const btnIn=document.getElementById('move-tab-in');
+  if(tab==='out'){
+    btnOut.style.background='var(--purple)'; btnOut.style.color='#fff';
+    btnIn.style.background='var(--bg2)'; btnIn.style.color='var(--text2)';
+  } else {
+    btnIn.style.background='var(--purple)'; btnIn.style.color='#fff';
+    btnOut.style.background='var(--bg2)'; btnOut.style.color='var(--text2)';
+  }
+  loadMove(tab);
+}
+
+async function loadMove(tab){
+  if(!window.db) return;
+  currentMoveTab=tab||currentMoveTab;
+  const listEl=document.getElementById('move-list');
+  listEl.innerHTML='<div class="loading">読み込み中...</div>';
+  try{
+    const field=currentMoveTab==='out'?'fromOffice':'toOffice';
+    const q=window.fsQuery(
+      window.fsCollection(window.db,'shipments'),
+      window.fsWhere(field,'==',currentOffice),
+      window.fsOrderBy('createdAt','desc'),
+      window.fsLimit(30)
+    );
+    const snap=await window.fsGetDocs(q);
+    const docs=snap.docs.map(d=>({id:d.id,...d.data()}));
+    if(docs.length===0){
+      listEl.innerHTML='<div class="loading">'+(currentMoveTab==='out'?'送り出した':'届いた')+'商品はまだありません</div>';
+      return;
+    }
+    listEl.innerHTML=docs.map(d=>{
+      const arrow=currentMoveTab==='out'
+        ?`<span style="color:var(--purple);font-weight:600;">${d.fromOffice}</span> → ${d.toOffice}`
+        :`${d.fromOffice} → <span style="color:var(--green);font-weight:600;">${d.toOffice}</span>`;
+      const shipDate=d.shipDate||'';
+      const arriveDate=d.arriveDate?` / 到着予定：${d.arriveDate}`:'';
+      const tracking=d.trackingNumber?`<div style="font-size:12px;color:var(--text2);margin-top:2px;"><i class="ti ti-barcode" style="vertical-align:-2px;margin-right:3px;"></i>${d.carrier||''} ${d.trackingNumber}</div>`:'';
+      const qty=d.quantity?` ×${d.quantity}`:'';
+      return `<div class="hist-item">
+        <div class="hist-top">
+          <span class="hist-name">${d.itemName||'商品名なし'}${qty}</span>
+          <span style="font-size:11px;color:var(--text2);">${shipDate}</span>
+        </div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:2px;">${arrow} · ${d.category||''}</div>
+        <div style="font-size:12px;color:var(--text2);">コア：${d.coreNumber||'-'}${arriveDate}</div>
+        ${tracking}
+        ${d.note?`<div style="font-size:12px;color:var(--text2);margin-top:3px;border-top:0.5px solid var(--border2);padding-top:3px;">${d.note}</div>`:''}
+        <div style="font-size:11px;color:var(--text2);margin-top:3px;">担当：${d.staff||''}</div>
+      </div>`;
+    }).join('');
+  }catch(e){
+    listEl.innerHTML='<div class="loading">読み込みエラー</div>';
+  }
 }
 
 // 星評価
