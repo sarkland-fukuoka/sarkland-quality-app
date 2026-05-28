@@ -510,18 +510,25 @@ textarea{min-height:72px;resize:none;}
           </select>
         </div>
         <div class="field-group"><div class="field-label">カテゴリ</div>
-          <select id="ship-cat"><option>家具</option><option>家電</option><option>イベント用品</option><option>その他</option></select>
+          <select id="ship-cat">
+            <option>家具</option>
+            <option>家電</option>
+            <option>家具家電</option>
+            <option>イベント用品</option>
+            <option>その他</option>
+          </select>
         </div>
-        <div class="field-group"><div class="field-label">商品名</div>
-          <input type="text" id="ship-item" placeholder="例：レースカーテン198（中古）">
-        </div>
-        <div class="field-group"><div class="field-label">コア番号</div>
+        <div class="field-group" style="margin-bottom:0;"><div class="field-label">コア番号（今回の出庫全体）</div>
           <input type="text" id="ship-core" placeholder="例：SK20260527">
         </div>
-        <div class="field-group"><div class="field-label">数量</div>
-          <input type="number" id="ship-qty" placeholder="例：50" min="1">
-        </div>
       </div>
+
+      <!-- 商品リスト -->
+      <div class="section-label">商品リスト</div>
+      <div id="ship-items-list"></div>
+      <button onclick="addShipItem()" style="width:100%;padding:12px;background:var(--bg2);color:var(--purple);border:1.5px dashed var(--purple);border-radius:var(--radius);font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;margin-bottom:10px;-webkit-tap-highlight-color:transparent;">
+        <i class="ti ti-plus" style="vertical-align:-2px;margin-right:4px;"></i>商品を追加
+      </button>
 
       <div class="section-label">配送情報</div>
       <div class="card">
@@ -687,6 +694,7 @@ function switchPage(id,el,title,sub){
   document.getElementById('page-title').textContent=title;
   document.getElementById('page-sub').textContent=sub||currentOffice;
   if(id==='arrive') loadArrivingList();
+  if(id==='ship' && document.getElementById('ship-items-list').children.length===0) addShipItem();
 }
 
 // 到着確認リスト読み込み
@@ -1022,38 +1030,93 @@ function filterKnowledge(){
 }
 function showAddKnowledge(){showToast('ナレッジ投稿機能は準備中です');}
 
-// 出庫登録
+// 商品リスト管理
+let shipItemCount = 0;
+
+function addShipItem(){
+  shipItemCount++;
+  const id = shipItemCount;
+  const list = document.getElementById('ship-items-list');
+  const div = document.createElement('div');
+  div.id = 'ship-item-'+id;
+  div.className = 'card';
+  div.style.marginBottom = '8px';
+  div.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+      <div style="font-size:13px;font-weight:600;color:var(--purple);">商品 ${id}</div>
+      <button onclick="removeShipItem(${id})" style="background:none;border:none;cursor:pointer;color:var(--red);font-size:22px;padding:0;line-height:1;">
+        <i class="ti ti-x"></i>
+      </button>
+    </div>
+    <div class="field-group">
+      <div class="field-label">商品名</div>
+      <input type="text" id="ship-item-name-${id}" placeholder="例：レースカーテン198（中古）">
+    </div>
+    <div class="field-group" style="margin-bottom:0;">
+      <div class="field-label">数量</div>
+      <input type="number" id="ship-item-qty-${id}" placeholder="例：50" min="1" value="1">
+    </div>
+  `;
+  list.appendChild(div);
+}
+
+function removeShipItem(id){
+  const el = document.getElementById('ship-item-'+id);
+  if(el) el.remove();
+}
+
+// 出庫登録（複数商品対応）
 async function doShip(){
   const to=document.getElementById('ship-to').value;
-  const item=document.getElementById('ship-item').value.trim();
+  const cat=document.getElementById('ship-cat').value;
   const core=document.getElementById('ship-core').value.trim();
-  const qty=document.getElementById('ship-qty').value;
   const carrier=document.getElementById('ship-carrier').value;
   const tracking=document.getElementById('ship-tracking').value.trim();
   const date=document.getElementById('ship-date').value;
   const arrive=document.getElementById('ship-arrive').value;
   const staff=document.getElementById('ship-staff').value.trim();
   const note=document.getElementById('ship-note').value.trim();
-  const cat=document.getElementById('ship-cat').value;
-  if(!to||!item||!core){showToast('送り先・商品名・コア番号は必須です');return;}
+
+  if(!to){showToast('送り先営業所を選択してください');return;}
+
+  // 商品リストを取得
+  const items=[];
+  const itemDivs=document.querySelectorAll('#ship-items-list .card');
+  itemDivs.forEach(div=>{
+    const idMatch=div.id.match(/ship-item-(\d+)/);
+    if(!idMatch) return;
+    const id=idMatch[1];
+    const name=document.getElementById('ship-item-name-'+id)?.value.trim();
+    const qty=parseInt(document.getElementById('ship-item-qty-'+id)?.value)||1;
+    if(name) items.push({name, qty});
+  });
+
+  if(items.length===0){showToast('商品を1つ以上追加してください');return;}
+
   const btn=document.getElementById('ship-btn');
   btn.disabled=true; btn.textContent='登録中...';
+
   try{
-    await window.fsAddDoc(window.fsCollection(window.db,'shipments'),{
-      fromOffice:currentOffice,
-      toOffice:to,
-      category:cat,
-      itemName:item,
-      coreNumber:core,
-      quantity:qty?parseInt(qty):1,
-      carrier,
-      trackingNumber:tracking,
-      shipDate:date,
-      arriveDate:arrive,
-      staff:staff||currentName,
-      note,
-      createdAt:window.fsServerTimestamp(),
-    });
+    // 商品ごとにshipmentを登録（コア番号は共通）
+    for(const item of items){
+      await window.fsAddDoc(window.fsCollection(window.db,'shipments'),{
+        fromOffice:currentOffice,
+        toOffice:to,
+        category:cat,
+        itemName:item.name,
+        coreNumber:core,
+        quantity:item.qty,
+        carrier,
+        trackingNumber:tracking,
+        shipDate:date,
+        arriveDate:arrive,
+        staff:staff||currentName,
+        note,
+        arrived:false,
+        evaluated:false,
+        createdAt:window.fsServerTimestamp(),
+      });
+    }
     document.getElementById('ship-notif-app').textContent=to+'のスタッフのアプリに届きます';
     document.getElementById('ship-notif-mail').textContent=to+'の所長宛に出庫情報を送信';
     document.getElementById('ship-success').classList.add('show');
@@ -1067,14 +1130,15 @@ async function doShip(){
 function resetShip(){
   document.getElementById('ship-success').classList.remove('show');
   document.getElementById('ship-to').value='';
-  document.getElementById('ship-item').value='';
   document.getElementById('ship-core').value='';
-  document.getElementById('ship-qty').value='';
+  document.getElementById('ship-items-list').innerHTML='';
+  shipItemCount=0;
   document.getElementById('ship-tracking').value='';
   document.getElementById('ship-date').value='';
   document.getElementById('ship-arrive').value='';
   document.getElementById('ship-staff').value='';
   document.getElementById('ship-note').value='';
+  addShipItem();
 }
 
 // 移動履歴
