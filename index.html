@@ -302,7 +302,7 @@ textarea{min-height:72px;resize:none;}
             <span style="font-size:12px;font-weight:600;color:#633806;">通知</span>
           </button>
 
-          <button onclick="switchPage('move',document.getElementById('nav-move'),'移動履歴','商品の移動記録');loadMove('out')"
+          <button onclick="switchPage('move',document.getElementById('nav-move'),'移動履歴','商品の移動記録');loadMove('all')"
             style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 8px;background:#E6F1FB;border:none;border-radius:var(--radius);cursor:pointer;-webkit-tap-highlight-color:transparent;font-family:inherit;">
             <i class="ti ti-arrows-transfer-up" style="font-size:28px;color:#185FA5;" aria-hidden="true"></i>
             <span style="font-size:12px;font-weight:600;color:#0C447C;">移動履歴</span>
@@ -568,9 +568,25 @@ textarea{min-height:72px;resize:none;}
     <!-- 移動履歴 -->
     <div class="page" id="pg-move">
       <!-- タブ切り替え -->
-      <div style="display:flex;gap:0;margin-bottom:12px;border:0.5px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;">
-        <button id="move-tab-out" onclick="switchMoveTab('out')" style="flex:1;padding:10px;background:var(--purple);color:#fff;border:none;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">📤 送り出した</button>
-        <button id="move-tab-in" onclick="switchMoveTab('in')" style="flex:1;padding:10px;background:var(--bg2);color:var(--text2);border:none;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">📥 届いた</button>
+      <div style="display:flex;gap:0;margin-bottom:10px;border:0.5px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;">
+        <button id="move-tab-all" onclick="switchMoveTab('all')" style="flex:1;padding:10px;background:var(--purple);color:#fff;border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">🌐 全体</button>
+        <button id="move-tab-out" onclick="switchMoveTab('out')" style="flex:1;padding:10px;background:var(--bg2);color:var(--text2);border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">📤 送り出した</button>
+        <button id="move-tab-in" onclick="switchMoveTab('in')" style="flex:1;padding:10px;background:var(--bg2);color:var(--text2);border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">📥 届いた</button>
+      </div>
+      <!-- 営業所フィルター -->
+      <div id="move-filter-wrap" style="display:none;margin-bottom:10px;">
+        <select id="move-filter-office" onchange="loadMove(currentMoveTab)" style="width:100%;">
+          <option value="">全営業所</option>
+          <option>札幌営業所</option><option>盛岡営業所</option><option>仙台営業所</option>
+          <option>いわき営業所</option><option>新潟営業所</option><option>北関東営業所</option>
+          <option>埼玉営業所</option><option>東関東営業所</option><option>東京営業所</option>
+          <option>西関東営業所</option><option>麻布営業所</option><option>南関東営業所</option>
+          <option>静岡営業所</option><option>名古屋営業所</option><option>滋賀営業所</option>
+          <option>関西営業所</option><option>兵庫営業所</option><option>広島営業所</option>
+          <option>四国営業所</option><option>福岡営業所</option><option>南九州営業所</option>
+          <option>SOKOPLUSいわき</option><option>SOKO PLUS千葉</option>
+          <option>SOKO PLUS奈良</option><option>SOKO PLUS岡山</option>
+        </select>
       </div>
       <div id="move-list"><div class="loading">読み込み中...</div></div>
     </div>
@@ -1142,17 +1158,24 @@ function resetShip(){
 }
 
 // 移動履歴
-let currentMoveTab='out';
+let currentMoveTab='all';
 function switchMoveTab(tab){
   currentMoveTab=tab;
+  const btnAll=document.getElementById('move-tab-all');
   const btnOut=document.getElementById('move-tab-out');
   const btnIn=document.getElementById('move-tab-in');
-  if(tab==='out'){
+  const filterWrap=document.getElementById('move-filter-wrap');
+  // タブの色をリセット
+  [btnAll,btnOut,btnIn].forEach(b=>{b.style.background='var(--bg2)';b.style.color='var(--text2)';});
+  if(tab==='all'){
+    btnAll.style.background='var(--purple)'; btnAll.style.color='#fff';
+    filterWrap.style.display='block';
+  } else if(tab==='out'){
     btnOut.style.background='var(--purple)'; btnOut.style.color='#fff';
-    btnIn.style.background='var(--bg2)'; btnIn.style.color='var(--text2)';
+    filterWrap.style.display='none';
   } else {
     btnIn.style.background='var(--purple)'; btnIn.style.color='#fff';
-    btnOut.style.background='var(--bg2)'; btnOut.style.color='var(--text2)';
+    filterWrap.style.display='none';
   }
   loadMove(tab);
 }
@@ -1163,42 +1186,98 @@ async function loadMove(tab){
   const listEl=document.getElementById('move-list');
   listEl.innerHTML='<div class="loading">読み込み中...</div>';
   try{
-    const field=currentMoveTab==='out'?'fromOffice':'toOffice';
-    const q=window.fsQuery(
-      window.fsCollection(window.db,'shipments'),
-      window.fsWhere(field,'==',currentOffice),
-      window.fsOrderBy('createdAt','desc'),
-      window.fsLimit(30)
-    );
-    const snap=await window.fsGetDocs(q);
-    const docs=snap.docs.map(d=>({id:d.id,...d.data()}));
-    if(docs.length===0){
-      listEl.innerHTML='<div class="loading">'+(currentMoveTab==='out'?'送り出した':'届いた')+'商品はまだありません</div>';
-      return;
+    let q;
+    const officeFilter=document.getElementById('move-filter-office')?.value||'';
+
+    if(currentMoveTab==='all'){
+      // 全営業所の移動履歴
+      if(officeFilter){
+        // 特定営業所でフィルタ（送り出し・届いた両方）
+        const [qOut, qIn] = await Promise.all([
+          window.fsGetDocs(window.fsQuery(
+            window.fsCollection(window.db,'shipments'),
+            window.fsWhere('fromOffice','==',officeFilter),
+            window.fsOrderBy('createdAt','desc'),
+            window.fsLimit(30)
+          )),
+          window.fsGetDocs(window.fsQuery(
+            window.fsCollection(window.db,'shipments'),
+            window.fsWhere('toOffice','==',officeFilter),
+            window.fsOrderBy('createdAt','desc'),
+            window.fsLimit(30)
+          ))
+        ]);
+        const docsOut=qOut.docs.map(d=>({id:d.id,...d.data()}));
+        const docsIn=qIn.docs.map(d=>({id:d.id,...d.data()}));
+        // 重複除去してマージ
+        const ids=new Set();
+        const docs=[...docsOut,...docsIn].filter(d=>{
+          if(ids.has(d.id)) return false;
+          ids.add(d.id); return true;
+        }).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+        renderMoveList(docs,'all');
+      } else {
+        // 全営業所・全履歴
+        q=window.fsQuery(
+          window.fsCollection(window.db,'shipments'),
+          window.fsOrderBy('createdAt','desc'),
+          window.fsLimit(50)
+        );
+        const snap=await window.fsGetDocs(q);
+        renderMoveList(snap.docs.map(d=>({id:d.id,...d.data()})),'all');
+      }
+    } else {
+      // 自営業所の送り出し・届いた
+      const field=currentMoveTab==='out'?'fromOffice':'toOffice';
+      q=window.fsQuery(
+        window.fsCollection(window.db,'shipments'),
+        window.fsWhere(field,'==',currentOffice),
+        window.fsOrderBy('createdAt','desc'),
+        window.fsLimit(30)
+      );
+      const snap=await window.fsGetDocs(q);
+      renderMoveList(snap.docs.map(d=>({id:d.id,...d.data()})),currentMoveTab);
     }
-    listEl.innerHTML=docs.map(d=>{
-      const arrow=currentMoveTab==='out'
-        ?`<span style="color:var(--purple);font-weight:600;">${d.fromOffice}</span> → ${d.toOffice}`
-        :`${d.fromOffice} → <span style="color:var(--green);font-weight:600;">${d.toOffice}</span>`;
-      const shipDate=d.shipDate||'';
-      const arriveDate=d.arriveDate?` / 到着予定：${d.arriveDate}`:'';
-      const tracking=d.trackingNumber?`<div style="font-size:12px;color:var(--text2);margin-top:2px;"><i class="ti ti-barcode" style="vertical-align:-2px;margin-right:3px;"></i>${d.carrier||''} ${d.trackingNumber}</div>`:'';
-      const qty=d.quantity?` ×${d.quantity}`:'';
-      return `<div class="hist-item">
-        <div class="hist-top">
-          <span class="hist-name">${d.itemName||'商品名なし'}${qty}</span>
-          <span style="font-size:11px;color:var(--text2);">${shipDate}</span>
-        </div>
-        <div style="font-size:12px;color:var(--text2);margin-bottom:2px;">${arrow} · ${d.category||''}</div>
-        <div style="font-size:12px;color:var(--text2);">コア：${d.coreNumber||'-'}${arriveDate}</div>
-        ${tracking}
-        ${d.note?`<div style="font-size:12px;color:var(--text2);margin-top:3px;border-top:0.5px solid var(--border2);padding-top:3px;">${d.note}</div>`:''}
-        <div style="font-size:11px;color:var(--text2);margin-top:3px;">担当：${d.staff||''}</div>
-      </div>`;
-    }).join('');
   }catch(e){
     listEl.innerHTML='<div class="loading">読み込みエラー</div>';
   }
+}
+
+function renderMoveList(docs, tab){
+  const listEl=document.getElementById('move-list');
+  if(docs.length===0){
+    listEl.innerHTML='<div class="loading">移動履歴がありません</div>';
+    return;
+  }
+  listEl.innerHTML=docs.map(d=>{
+    let arrow;
+    if(tab==='out'){
+      arrow=`<span style="color:var(--purple);font-weight:600;">${d.fromOffice}</span> → ${d.toOffice}`;
+    } else if(tab==='in'){
+      arrow=`${d.fromOffice} → <span style="color:var(--green);font-weight:600;">${d.toOffice}</span>`;
+    } else {
+      // 全体表示：自営業所を強調
+      const fromStyle=d.fromOffice===currentOffice?'color:var(--purple);font-weight:600;':'';
+      const toStyle=d.toOffice===currentOffice?'color:var(--green);font-weight:600;':'';
+      arrow=`<span style="${fromStyle}">${d.fromOffice}</span> → <span style="${toStyle}">${d.toOffice}</span>`;
+    }
+    const shipDate=d.shipDate||'';
+    const arriveDate=d.arriveDate?` / 到着予定：${d.arriveDate}`:'';
+    const tracking=d.trackingNumber?`<div style="font-size:12px;color:var(--text2);margin-top:2px;"><i class="ti ti-barcode" style="vertical-align:-2px;margin-right:3px;"></i>${d.carrier||''} ${d.trackingNumber}</div>`:'';
+    const qty=d.quantity?` ×${d.quantity}`:'';
+    const arrivedBadge=d.arrived?'<span style="color:var(--green);font-size:11px;font-weight:600;margin-left:6px;">✅到着済</span>':'<span style="color:var(--orange);font-size:11px;font-weight:600;margin-left:6px;">🚚輸送中</span>';
+    return `<div class="hist-item">
+      <div class="hist-top">
+        <span class="hist-name">${d.itemName||'商品名なし'}${qty}</span>
+        <span style="font-size:11px;color:var(--text2);">${shipDate}</span>
+      </div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:2px;">${arrow} · ${d.category||''}${arrivedBadge}</div>
+      <div style="font-size:12px;color:var(--text2);">コア：${d.coreNumber||'-'}${arriveDate}</div>
+      ${tracking}
+      ${d.note?`<div style="font-size:12px;color:var(--text2);margin-top:3px;border-top:0.5px solid var(--border2);padding-top:3px;">${d.note}</div>`:''}
+      <div style="font-size:11px;color:var(--text2);margin-top:3px;">担当：${d.staff||''}</div>
+    </div>`;
+  }).join('');
 }
 
 // 星評価
