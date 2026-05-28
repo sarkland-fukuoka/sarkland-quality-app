@@ -229,31 +229,93 @@ textarea{min-height:72px;resize:none;}
 
     <!-- ダッシュボード -->
     <div class="page active" id="pg-home">
-      <div style="font-size:14px;margin-bottom:14px;">
+      <div style="font-size:14px;margin-bottom:12px;">
         <span id="disp-office" style="color:var(--text2);"></span>　<span id="disp-name" style="font-weight:600;"></span>さん、お疲れ様です
       </div>
+
+      <!-- 未評価アラート -->
+      <div id="pending-alert" style="display:none;background:var(--red-light);border:1px solid var(--red);border-radius:var(--radius);padding:12px 14px;margin-bottom:12px;cursor:pointer;"
+        onclick="switchPage('check',document.getElementById('nav-check'),'品質評価','商品の状態を評価する');loadPendingEvals()">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <i class="ti ti-alert-circle" style="font-size:22px;color:var(--red);flex-shrink:0;" aria-hidden="true"></i>
+          <div>
+            <div style="font-size:14px;font-weight:600;color:var(--red);">未評価の商品が <span id="pending-count">0</span> 件あります</div>
+            <div style="font-size:12px;color:var(--red);margin-top:2px;">タップして品質評価を行ってください →</div>
+          </div>
+        </div>
+      </div>
+
       <div class="metric-grid">
         <div class="metric"><div class="metric-val" id="stat-count">-</div><div class="metric-lbl">今月の評価件数</div></div>
         <div class="metric"><div class="metric-val good" id="stat-avg">-</div><div class="metric-lbl">全社平均スコア</div></div>
         <div class="metric"><div class="metric-val warn" id="stat-flags">-</div><div class="metric-lbl">要改善フラグ</div></div>
         <div class="metric"><div class="metric-val">25/25</div><div class="metric-lbl">参加拠点</div></div>
       </div>
-      <div class="card">
-        <div class="card-title">評価項目別 平均スコア（全社）</div>
-        <div class="prog-row"><div class="prog-lbl">清潔感</div><div class="prog-track"><div class="prog-fill" id="prog-clean" style="width:0%;"></div></div><span style="font-size:13px;min-width:28px;" id="val-clean">-</span></div>
-        <div class="prog-row"><div class="prog-lbl">外観・傷</div><div class="prog-track"><div class="prog-fill" id="prog-looks" style="width:0%;"></div></div><span style="font-size:13px;min-width:28px;" id="val-looks">-</span></div>
-        <div class="prog-row"><div class="prog-lbl">付属品</div><div class="prog-track"><div class="prog-fill" id="prog-parts" style="width:0%;background:var(--red);"></div></div><span style="font-size:13px;min-width:28px;color:var(--red);" id="val-parts">-</span></div>
-        <div class="prog-row"><div class="prog-lbl">梱包</div><div class="prog-track"><div class="prog-fill" id="prog-pack" style="width:0%;"></div></div><span style="font-size:13px;min-width:28px;" id="val-pack">-</span></div>
-      </div>
-      <div style="font-size:13px;font-weight:600;color:var(--text2);margin:4px 0 8px;">最近の評価</div>
+      <div style="font-size:13px;font-weight:600;color:var(--text2);margin:4px 0 8px;">⚠ 要注意の営業所</div>
       <div id="recent-evals"><div class="loading">読み込み中...</div></div>
+
+      <!-- アイコンメニュー -->
+      <div style="margin-top:16px;border-top:0.5px solid var(--border2);padding-top:14px;">
+        <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:10px;">メニュー</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+
+          <button onclick="switchPage('ship',document.getElementById('nav-ship'),'出庫登録','商品を送り出すとき')"
+            style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 8px;background:var(--purple-light);border:none;border-radius:var(--radius);cursor:pointer;-webkit-tap-highlight-color:transparent;font-family:inherit;">
+            <i class="ti ti-truck" style="font-size:28px;color:var(--purple);" aria-hidden="true"></i>
+            <span style="font-size:12px;font-weight:600;color:var(--purple-dark);">出庫登録</span>
+          </button>
+
+          <button onclick="switchPage('arrive',document.getElementById('nav-arrive'),'到着確認','届いた商品の受け取り');loadArrivingList()"
+            style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 8px;background:var(--green-light);border:none;border-radius:var(--radius);cursor:pointer;-webkit-tap-highlight-color:transparent;font-family:inherit;">
+            <i class="ti ti-package-import" style="font-size:28px;color:var(--green);" aria-hidden="true"></i>
+            <span style="font-size:12px;font-weight:600;color:#085041;">到着確認</span>
+          </button>
+
+          <button onclick="switchPage('check',document.getElementById('nav-check'),'品質評価','商品の状態を評価する');loadPendingEvals()"
+            style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 8px;background:#EEEDFE;border:none;border-radius:var(--radius);cursor:pointer;-webkit-tap-highlight-color:transparent;font-family:inherit;position:relative;">
+            <div style="position:relative;">
+              <i class="ti ti-star" style="font-size:28px;color:var(--purple);" aria-hidden="true"></i>
+              <div id="menu-eval-dot" style="width:8px;height:8px;background:#E24B4A;border-radius:50%;position:absolute;top:-2px;right:-2px;display:none;"></div>
+            </div>
+            <span style="font-size:12px;font-weight:600;color:var(--purple-dark);">品質評価</span>
+          </button>
+
+          <button onclick="switchPage('notif',document.getElementById('nav-notif'),'通知','評価結果の受信ボックス');clearNotif();loadNotifications()"
+            style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 8px;background:var(--orange-light);border:none;border-radius:var(--radius);cursor:pointer;-webkit-tap-highlight-color:transparent;font-family:inherit;position:relative;">
+            <div style="position:relative;">
+              <i class="ti ti-bell" style="font-size:28px;color:#854F0B;" aria-hidden="true"></i>
+              <div id="menu-notif-dot" style="width:8px;height:8px;background:#E24B4A;border-radius:50%;position:absolute;top:-2px;right:-2px;display:none;"></div>
+            </div>
+            <span style="font-size:12px;font-weight:600;color:#633806;">通知</span>
+          </button>
+
+          <button onclick="switchPage('move',document.getElementById('nav-move'),'移動履歴','商品の移動記録');loadMove('out')"
+            style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 8px;background:#E6F1FB;border:none;border-radius:var(--radius);cursor:pointer;-webkit-tap-highlight-color:transparent;font-family:inherit;">
+            <i class="ti ti-arrows-transfer-up" style="font-size:28px;color:#185FA5;" aria-hidden="true"></i>
+            <span style="font-size:12px;font-weight:600;color:#0C447C;">移動履歴</span>
+          </button>
+
+          <button onclick="switchPage('rank',document.getElementById('nav-rank'),'ランキング','営業所別スコア');loadRanking()"
+            style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 8px;background:var(--red-light);border:none;border-radius:var(--radius);cursor:pointer;-webkit-tap-highlight-color:transparent;font-family:inherit;">
+            <i class="ti ti-medal" style="font-size:28px;color:var(--red);" aria-hidden="true"></i>
+            <span style="font-size:12px;font-weight:600;color:var(--red);">ランキング</span>
+          </button>
+
+        </div>
+      </div>
     </div>
 
-    <!-- 入庫チェック -->
+    <!-- 到着確認 -->
+    <div class="page" id="pg-arrive">
+      <div style="font-size:13px;color:var(--text2);margin-bottom:12px;">送り先として登録された商品を確認し「受け取りました」をタップしてください。</div>
+      <div id="arriving-list"><div class="loading">読み込み中...</div></div>
+    </div>
+
+    <!-- 品質評価（旧入庫チェック） -->
     <div class="page" id="pg-check" style="position:relative;">
       <div id="check-success" class="success-overlay">
         <i class="ti ti-circle-check" style="font-size:64px;color:var(--green);"></i>
-        <div style="font-size:20px;font-weight:700;text-align:center;">送信完了！</div>
+        <div style="font-size:20px;font-weight:700;text-align:center;">評価送信完了！</div>
         <div style="font-size:14px;color:var(--text2);text-align:center;">Firestoreに保存しました</div>
         <div style="width:100%;margin-top:4px;">
           <div class="flow-box" style="margin-bottom:8px;">
@@ -268,15 +330,11 @@ textarea{min-height:72px;resize:none;}
         <button class="primary-btn" style="margin-top:8px;margin-bottom:0;" onclick="resetCheck()">続けて入力する</button>
       </div>
 
-      <!-- Step 1: 到着確認 -->
-      <div id="check-step1">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-          <div style="font-size:15px;font-weight:600;">Step 1：到着確認</div>
-          <div style="font-size:12px;color:var(--text2);">届いた商品にチェック</div>
-        </div>
-        <div id="arriving-list"><div class="loading">読み込み中...</div></div>
-        <div style="margin:14px 0 6px;border-top:0.5px solid var(--border2);padding-top:14px;font-size:15px;font-weight:600;">Step 2：状態評価</div>
-        <div style="font-size:12px;color:var(--text2);margin-bottom:12px;">到着確認した商品の品質を評価してください</div>
+      <!-- 未評価リスト -->
+      <div id="pending-evals-section">
+        <div style="font-size:13px;font-weight:600;color:var(--red);margin-bottom:8px;" id="pending-evals-title"></div>
+        <div id="pending-evals-list"></div>
+        <div style="border-top:0.5px solid var(--border2);margin:14px 0;"></div>
       </div>
 
       <div class="section-label">基本情報</div>
@@ -499,13 +557,15 @@ textarea{min-height:72px;resize:none;}
 
   </div>
 
-  <div class="bottomnav">
-    <button class="nav-btn active" id="nav-home" onclick="switchPage('home',this,'ダッシュボード','')"><i class="ti ti-layout-dashboard"></i>ホーム</button>
-    <button class="nav-btn" id="nav-ship" onclick="switchPage('ship',this,'出庫登録','商品を送り出すとき')"><i class="ti ti-truck"></i>出庫</button>
-    <button class="nav-btn" id="nav-check" onclick="switchPage('check',this,'入庫チェック','商品を受け取ったとき')"><i class="ti ti-clipboard-check"></i>入庫</button>
-    <button class="nav-btn" id="nav-notif" onclick="switchPage('notif',this,'通知','出庫・評価の受信ボックス');clearNotif();loadNotifications()" style="position:relative;"><i class="ti ti-bell"></i><div class="nav-dot" id="nav-notif-dot"></div>通知</button>
-    <button class="nav-btn" id="nav-move" onclick="switchPage('move',this,'移動履歴','商品の移動記録');loadMove('out')"><i class="ti ti-arrows-transfer-up"></i>移動</button>
-    <button class="nav-btn" id="nav-rank" onclick="switchPage('rank',this,'ランキング','営業所別スコア');loadRanking()"><i class="ti ti-medal"></i>順位</button>
+  <div class="bottomnav" style="justify-content:center;">
+    <button class="nav-btn active" id="nav-home" onclick="switchPage('home',this,'ダッシュボード','');loadDashboard()" style="flex:0 0 auto;padding:4px 32px;"><i class="ti ti-layout-dashboard"></i>ホーム</button>
+    <button class="nav-btn" id="nav-ship" style="display:none;"></button>
+    <button class="nav-btn" id="nav-arrive" style="display:none;"></button>
+    <button class="nav-btn" id="nav-check" style="display:none;"></button>
+    <button class="nav-btn" id="nav-notif" style="display:none;position:relative;"><div class="nav-dot" id="nav-notif-dot"></div></button>
+    <button class="nav-btn" id="nav-move" style="display:none;"></button>
+    <button class="nav-btn" id="nav-rank" style="display:none;"></button>
+    <button class="nav-btn" id="nav-knowledge" style="display:none;"></button>
   </div>
 </div>
 
@@ -613,7 +673,7 @@ function switchPage(id,el,title,sub){
   el.classList.add('active');
   document.getElementById('page-title').textContent=title;
   document.getElementById('page-sub').textContent=sub||currentOffice;
-  if(id==='check') loadArrivingList();
+  if(id==='arrive') loadArrivingList();
 }
 
 // 到着確認リスト読み込み
@@ -648,9 +708,9 @@ async function loadArrivingList(){
           <div style="font-size:12px;color:var(--text2);margin-bottom:8px;">
             コア：${d.coreNumber||'-'} · ${d.fromOffice||''}発 · ${d.carrier||''} ${d.trackingNumber||''}
           </div>
-          <button onclick="confirmArrival('${d.id}','${(d.itemName||'').replace(/'/g,'').replace(/"/g,'')}','${d.fromOffice||''}')"
+          <button onclick="confirmArrival('${d.id}','${(d.itemName||'').replace(/'/g,'').replace(/"/g,'')}','${d.fromOffice||''}','${d.coreNumber||''}','${d.category||''}')"
             style="width:100%;padding:10px;background:var(--green);color:#fff;border:none;border-radius:var(--radius-sm);font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">
-            <i class="ti ti-check" style="vertical-align:-2px;margin-right:4px;"></i>受け取りました ✓
+            <i class="ti ti-check" style="vertical-align:-2px;margin-right:4px;"></i>受け取りました → 品質評価へ
           </button>
         </div>`).join('');
     } else {
@@ -670,28 +730,119 @@ async function loadArrivingList(){
   }
 }
 
-// 到着確認ボタン処理
-async function confirmArrival(shipId, itemName, fromOffice){
+// 到着確認ボタン処理 → 評価待ちリストに追加
+async function confirmArrival(shipId, itemName, fromOffice, coreNum, category){
   try{
     const firestoreModule=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
     const ref=firestoreModule.doc(window.db,'shipments',shipId);
     await firestoreModule.updateDoc(ref,{
       arrived:true,
       arrivedAt:window.fsServerTimestamp(),
-      arrivedBy:currentName
+      arrivedBy:currentName,
+      evaluated:false
     });
-    showToast('✅ 到着確認しました！');
-    if(fromOffice) document.getElementById('check-from').value=fromOffice;
-    if(itemName) document.getElementById('check-item').value=itemName;
+    showToast('✅ 到着確認しました！品質評価リストに追加されました');
     loadArrivingList();
+    checkPendingCount();
   }catch(e){
     showToast('確認に失敗しました。もう一度お試しください。');
   }
 }
 
+// 未評価件数チェック（ダッシュボード用）
+async function checkPendingCount(){
+  if(!window.db) return;
+  try{
+    const q=window.fsQuery(
+      window.fsCollection(window.db,'shipments'),
+      window.fsWhere('toOffice','==',currentOffice),
+      window.fsWhere('arrived','==',true),
+      window.fsWhere('evaluated','==',false),
+      window.fsLimit(50)
+    );
+    const snap=await window.fsGetDocs(q);
+    const count=snap.docs.length;
+    const alertEl=document.getElementById('pending-alert');
+    const countEl=document.getElementById('pending-count');
+    const evalDot=document.getElementById('menu-eval-dot');
+    if(count>0){
+      if(alertEl) alertEl.style.display='block';
+      if(countEl) countEl.textContent=count;
+      if(evalDot) evalDot.style.display='block';
+    } else {
+      if(alertEl) alertEl.style.display='none';
+      if(evalDot) evalDot.style.display='none';
+    }
+  }catch(e){}
+}
+
+// 未評価リスト読み込み（品質評価画面）
+async function loadPendingEvals(){
+  if(!window.db) return;
+  const titleEl=document.getElementById('pending-evals-title');
+  const listEl=document.getElementById('pending-evals-list');
+  const sectionEl=document.getElementById('pending-evals-section');
+  if(!titleEl||!listEl) return;
+  try{
+    const q=window.fsQuery(
+      window.fsCollection(window.db,'shipments'),
+      window.fsWhere('toOffice','==',currentOffice),
+      window.fsWhere('arrived','==',true),
+      window.fsWhere('evaluated','==',false),
+      window.fsOrderBy('arrivedAt','desc'),
+      window.fsLimit(20)
+    );
+    const snap=await window.fsGetDocs(q);
+    const docs=snap.docs.map(d=>({id:d.id,...d.data()}));
+    if(docs.length===0){
+      sectionEl.style.display='none';
+      return;
+    }
+    sectionEl.style.display='block';
+    titleEl.textContent='⚠ 未評価の商品（'+docs.length+'件）— タップして入力';
+    listEl.innerHTML=docs.map(d=>{
+      const arrivedDate=d.arrivedAt&&d.arrivedAt.toDate?d.arrivedAt.toDate().toLocaleDateString('ja-JP'):'';
+      return `<div class="hist-item" style="border-left:3px solid var(--red);margin-bottom:8px;cursor:pointer;"
+        onclick="fillEvalFromPending('${(d.itemName||'').replace(/'/g,'').replace(/"/g,'')}','${d.fromOffice||''}','${d.category||''}','${d.id}')">
+        <div class="hist-top">
+          <span class="hist-name">${d.itemName||'商品名なし'} ×${d.quantity||1}</span>
+          <span class="badge badge-bad">未評価</span>
+        </div>
+        <div style="font-size:12px;color:var(--text2);">コア：${d.coreNumber||'-'} · ${d.fromOffice||''} · 到着：${arrivedDate}</div>
+        <div style="font-size:12px;color:var(--purple);font-weight:600;margin-top:4px;">タップして評価する →</div>
+      </div>`;
+    }).join('');
+  }catch(e){
+    sectionEl.style.display='none';
+  }
+}
+
+// 未評価リストから情報を自動入力
+function fillEvalFromPending(itemName, fromOffice, category, shipId){
+  if(fromOffice) document.getElementById('check-from').value=fromOffice;
+  if(itemName) document.getElementById('check-item').value=itemName;
+  if(category){
+    const catSel=document.getElementById('check-cat');
+    for(let i=0;i<catSel.options.length;i++){
+      if(catSel.options[i].value===category){catSel.selectedIndex=i;break;}
+    }
+  }
+  document.getElementById('pg-check').dataset.shipId=shipId;
+  showToast('📝 '+itemName+' の情報を入力しました！採点してください');
+}
+
 function clearNotif(){
   document.getElementById('notif-dot').style.display='none';
   document.getElementById('nav-notif-dot').style.display='none';
+  const menuDot=document.getElementById('menu-notif-dot');
+  if(menuDot) menuDot.style.display='none';
+}
+
+function showNotifDot(){
+  document.getElementById('notif-dot').style.display='block';
+  document.getElementById('nav-notif-dot').style.display='block';
+  const menuDot=document.getElementById('menu-notif-dot');
+  if(menuDot) menuDot.style.display='block';
 }
 
 // ダッシュボード読み込み
@@ -725,17 +876,32 @@ async function loadDashboard(){
       });
     }
 
-    // 最近の評価
+    // 要注意の営業所（スコア3未満）
     const recentEl=document.getElementById('recent-evals');
     if(docs.length===0){recentEl.innerHTML='<div class="loading">まだ評価がありません</div>';return;}
-    recentEl.innerHTML=docs.slice(0,5).map(d=>{
-      const score=d.totalScore||0;
-      const badgeClass=score>=4?'badge-good':score>=3?'badge-mid':'badge-bad';
-      const stars='★'.repeat(Math.round(score))+'☆'.repeat(5-Math.round(score));
-      const flags=d.flags&&d.flags.length>0?`<span style="color:var(--red);margin-left:4px;">${d.flags[0]}</span>`:'';
-      const date=d.createdAt&&d.createdAt.toDate?d.createdAt.toDate().toLocaleDateString('ja-JP'):'';
-      return `<div class="hist-item"><div class="hist-top"><span class="hist-name">${d.itemName||'商品名なし'}</span><span class="badge ${badgeClass}">${stars}</span></div><div class="hist-meta">${d.fromOffice||''}→${d.toOffice||''} · ${d.category||''} · ${date} · ${d.evaluator||''}${flags}</div></div>`;
-    }).join('');
+    // 営業所別平均スコアを集計
+    const offScores={};
+    docs.forEach(d=>{
+      if(!d.fromOffice||!d.totalScore) return;
+      if(!offScores[d.fromOffice]) offScores[d.fromOffice]={sum:0,count:0,flags:0};
+      offScores[d.fromOffice].sum+=d.totalScore;
+      offScores[d.fromOffice].count++;
+      if(d.flags&&d.flags.length>0) offScores[d.fromOffice].flags++;
+    });
+    const warned=Object.entries(offScores)
+      .map(([name,{sum,count,flags}])=>({name,avg:sum/count,flags}))
+      .filter(o=>o.avg<3.5)
+      .sort((a,b)=>a.avg-b.avg)
+      .slice(0,3);
+    if(warned.length===0){
+      recentEl.innerHTML='<div style="font-size:13px;color:var(--green);font-weight:600;">✅ 要注意の営業所はありません</div>';
+    } else {
+      recentEl.innerHTML=warned.map(o=>{
+        const badgeClass=o.avg<3?'badge-bad':'badge-mid';
+        return `<div class="hist-item"><div class="hist-top"><span class="hist-name">${o.name}</span><span class="badge ${badgeClass}">${o.avg.toFixed(1)}</span></div><div class="hist-meta">フラグあり：${o.flags}件</div></div>`;
+      }).join('');
+    }
+    checkPendingCount();
   }catch(e){console.error(e);}
 }
 
@@ -885,8 +1051,7 @@ async function doShip(){
     document.getElementById('ship-notif-app').textContent=to+'のスタッフのアプリに届きます';
     document.getElementById('ship-notif-mail').textContent=to+'の所長宛に出庫情報を送信';
     document.getElementById('ship-success').classList.add('show');
-    document.getElementById('notif-dot').style.display='block';
-    document.getElementById('nav-notif-dot').style.display='block';
+    showNotifDot();
   }catch(e){
     showToast('登録に失敗しました。もう一度お試しください。');
   }
@@ -1055,10 +1220,20 @@ async function doSubmit(){
       comment,
       createdAt:window.fsServerTimestamp(),
     });
+    // 対応するshipmentのevaluated=trueに更新
+    const shipId=document.getElementById('pg-check').dataset.shipId;
+    if(shipId){
+      try{
+        const firestoreModule=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+        const ref=firestoreModule.doc(window.db,'shipments',shipId);
+        await firestoreModule.updateDoc(ref,{evaluated:true});
+        delete document.getElementById('pg-check').dataset.shipId;
+      }catch(e2){}
+    }
     document.getElementById('notif-to-mail').textContent=from+'の所長宛に詳細レポートを送信';
     document.getElementById('check-success').classList.add('show');
-    document.getElementById('notif-dot').style.display='block';
-    document.getElementById('nav-notif-dot').style.display='block';
+    showNotifDot();
+    checkPendingCount();
   }catch(e){
     showToast('送信に失敗しました。もう一度お試しください。');
     console.error(e);
@@ -1078,6 +1253,7 @@ function resetCheck(){
   document.getElementById('check-item').value='';
   document.getElementById('check-comment').value='';
   photos=[];renderPhotos();
+  loadPendingEvals();
   loadDashboard();
 }
 </script>
