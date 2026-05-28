@@ -870,29 +870,23 @@ async function loadDashboard(){
     const now=new Date(); const monthStart=new Date(now.getFullYear(),now.getMonth(),1);
     const thisMonth=docs.filter(d=>d.createdAt&&d.createdAt.toDate&&d.createdAt.toDate()>=monthStart);
     document.getElementById('stat-count').textContent=thisMonth.length;
+    document.getElementById('stat-flags').textContent='0';
+    document.getElementById('stat-avg').textContent='-';
 
     if(docs.length>0){
       const avg=(docs.reduce((s,d)=>s+(d.totalScore||0),0)/docs.length).toFixed(1);
       document.getElementById('stat-avg').textContent=avg;
       const flags=docs.filter(d=>d.flags&&d.flags.length>0).length;
       document.getElementById('stat-flags').textContent=flags;
-
-      // 項目別平均
-      const keys=['clean','looks','parts','pack'];
-      keys.forEach(k=>{
-        const vals=docs.filter(d=>d.scores&&d.scores[k]).map(d=>d.scores[k]);
-        if(vals.length){
-          const a=(vals.reduce((s,v)=>s+v,0)/vals.length).toFixed(1);
-          document.getElementById('val-'+k).textContent=a;
-          document.getElementById('prog-'+k).style.width=(a/5*100)+'%';
-        }
-      });
     }
 
-    // 要注意の営業所（スコア3未満）
+    // 要注意の営業所
     const recentEl=document.getElementById('recent-evals');
-    if(docs.length===0){recentEl.innerHTML='<div class="loading">まだ評価がありません</div>';return;}
-    // 営業所別平均スコアを集計
+    if(docs.length===0){
+      recentEl.innerHTML='<div style="font-size:13px;color:var(--green);font-weight:600;">✅ まだ評価がありません</div>';
+      checkPendingCount();
+      return;
+    }
     const offScores={};
     docs.forEach(d=>{
       if(!d.fromOffice||!d.totalScore) return;
@@ -901,11 +895,10 @@ async function loadDashboard(){
       offScores[d.fromOffice].count++;
       if(d.flags&&d.flags.length>0) offScores[d.fromOffice].flags++;
     });
-    const warned=Object.entries(offScores)
+    const allOffices=Object.entries(offScores)
       .map(([name,{sum,count,flags}])=>({name,avg:sum/count,flags}))
-      .filter(o=>o.avg<3.5)
-      .sort((a,b)=>a.avg-b.avg)
-      .slice(0,3);
+      .sort((a,b)=>a.avg-b.avg);
+    const warned=allOffices.filter(o=>o.avg<3.5).slice(0,3);
     if(warned.length===0){
       recentEl.innerHTML='<div style="font-size:13px;color:var(--green);font-weight:600;">✅ 要注意の営業所はありません</div>';
     } else {
