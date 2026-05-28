@@ -1,37 +1,33 @@
-const CACHE_NAME = 'sarkland-v1';
+const CACHE_NAME = 'sarkland-v3';
 const urlsToCache = [
   '/sarkland-quality-app/',
   '/sarkland-quality-app/index.html',
   '/sarkland-quality-app/manifest.json'
 ];
 
+// インストール時に古いキャッシュを削除
 self.addEventListener('install', event => {
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))
   );
 });
 
-self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.match(event.request).then(response => {
-      return response || fetch(event.request);
-    })
+// 古いキャッシュを削除してすぐに有効化
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(
+        keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
+      )
+    ).then(() => self.clients.claim())
   );
 });
 
-self.addEventListener('push', event => {
-  const data = event.data ? event.data.json() : {};
-  const title = data.title || 'SARKLAND 品質管理';
-  const options = {
-    body: data.body || '新しい入庫チェックが届きました',
-    icon: '/sarkland-quality-app/icon-192.svg',
-    badge: '/sarkland-quality-app/icon-96.svg',
-    data: data
-  };
-  event.waitUntil(self.registration.showNotification(title, options));
-});
-
-self.addEventListener('notificationclick', event => {
-  event.notification.close();
-  event.waitUntil(clients.openWindow('/sarkland-quality-app/'));
+self.addEventListener('fetch', event => {
+  event.respondWith(
+    fetch(event.request).catch(() =>
+      caches.match(event.request)
+    )
+  );
 });
