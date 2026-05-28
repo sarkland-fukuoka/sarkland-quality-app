@@ -567,14 +567,20 @@ textarea{min-height:72px;resize:none;}
 
     <!-- 移動履歴 -->
     <div class="page" id="pg-move">
+      <!-- コア番号検索 -->
+      <div style="display:flex;gap:8px;margin-bottom:10px;">
+        <input type="text" id="move-core-search" placeholder="🔍 コア番号で検索..." style="flex:1;" oninput="onCoreSearch()">
+        <button onclick="clearCoreSearch()" style="padding:0 12px;background:var(--bg3);color:var(--text2);border:none;border-radius:var(--radius-sm);font-size:13px;cursor:pointer;font-family:inherit;">クリア</button>
+      </div>
+
       <!-- タブ切り替え -->
-      <div style="display:flex;gap:0;margin-bottom:10px;border:0.5px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;">
+      <div id="move-tabs" style="display:flex;gap:0;margin-bottom:10px;border:0.5px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;">
         <button id="move-tab-all" onclick="switchMoveTab('all')" style="flex:1;padding:10px;background:var(--purple);color:#fff;border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">🌐 全体</button>
         <button id="move-tab-out" onclick="switchMoveTab('out')" style="flex:1;padding:10px;background:var(--bg2);color:var(--text2);border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">📤 送り出した</button>
         <button id="move-tab-in" onclick="switchMoveTab('in')" style="flex:1;padding:10px;background:var(--bg2);color:var(--text2);border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">📥 届いた</button>
       </div>
       <!-- 営業所フィルター -->
-      <div id="move-filter-wrap" style="display:none;margin-bottom:10px;">
+      <div id="move-filter-wrap" style="display:block;margin-bottom:10px;">
         <select id="move-filter-office" onchange="loadMove(currentMoveTab)" style="width:100%;">
           <option value="">全営業所</option>
           <option>札幌営業所</option><option>盛岡営業所</option><option>仙台営業所</option>
@@ -1155,6 +1161,86 @@ function resetShip(){
   document.getElementById('ship-staff').value='';
   document.getElementById('ship-note').value='';
   addShipItem();
+}
+
+// コア番号検索
+let coreSearchTimer=null;
+function onCoreSearch(){
+  clearTimeout(coreSearchTimer);
+  const kw=document.getElementById('move-core-search').value.trim();
+  if(!kw){
+    document.getElementById('move-tabs').style.display='flex';
+    document.getElementById('move-filter-wrap').style.display='block';
+    loadMove(currentMoveTab);
+    return;
+  }
+  document.getElementById('move-tabs').style.display='none';
+  document.getElementById('move-filter-wrap').style.display='none';
+  coreSearchTimer=setTimeout(()=>searchByCore(kw), 500);
+}
+
+function clearCoreSearch(){
+  document.getElementById('move-core-search').value='';
+  document.getElementById('move-tabs').style.display='flex';
+  document.getElementById('move-filter-wrap').style.display='block';
+  loadMove(currentMoveTab);
+}
+
+async function searchByCore(coreNum){
+  if(!window.db) return;
+  const listEl=document.getElementById('move-list');
+  listEl.innerHTML='<div class="loading">検索中...</div>';
+  try{
+    const q=window.fsQuery(
+      window.fsCollection(window.db,'shipments'),
+      window.fsWhere('coreNumber','==',coreNum),
+      window.fsOrderBy('createdAt','desc'),
+      window.fsLimit(50)
+    );
+    const snap=await window.fsGetDocs(q);
+    const docs=snap.docs.map(d=>({id:d.id,...d.data()}));
+    if(docs.length===0){
+      listEl.innerHTML=`<div style="text-align:center;padding:20px;">
+        <div style="font-size:40px;margin-bottom:8px;">🔍</div>
+        <div style="font-size:14px;color:var(--text2);">「${coreNum}」の移動履歴が見つかりません</div>
+      </div>`;
+      return;
+    }
+    listEl.innerHTML=`
+      <div style="background:var(--purple-light);border-radius:var(--radius);padding:12px 14px;margin-bottom:12px;">
+        <div style="font-size:13px;font-weight:600;color:var(--purple);">コア番号：${coreNum}</div>
+        <div style="font-size:12px;color:var(--text2);margin-top:2px;">${docs.length}件の移動履歴</div>
+      </div>
+    `+docs.map((d,i)=>{
+      const evalBadge=d.evaluated
+        ?'<span style="color:var(--green);font-size:11px;font-weight:600;">⭐評価済</span>'
+        :d.arrived?'<span style="color:var(--orange);font-size:11px;font-weight:600;">⚠未評価</span>'
+        :'<span style="color:var(--text2);font-size:11px;">🚚輸送中</span>';
+      const arrivedBadge=d.arrived
+        ?'<span style="color:var(--green);font-size:11px;font-weight:600;margin-left:6px;">✅到着済</span>':'';
+      const shipDate=d.shipDate||'';
+      const tracking=d.trackingNumber?`<div style="font-size:12px;color:var(--text2);margin-top:2px;"><i class="ti ti-barcode" style="vertical-align:-2px;margin-right:3px;"></i>${d.carrier||''} ${d.trackingNumber}</div>`:'';
+      const timelineIcon=i===0?'🔵':'⚫';
+      return `<div class="hist-item" style="border-left:3px solid var(--purple);position:relative;">
+        <div style="position:absolute;left:-10px;top:12px;font-size:16px;">${timelineIcon}</div>
+        <div class="hist-top">
+          <span class="hist-name">${d.itemName||'商品名なし'} ×${d.quantity||1}</span>
+          <span style="font-size:11px;color:var(--text2);">${shipDate}</span>
+        </div>
+        <div style="font-size:13px;font-weight:600;margin-bottom:4px;">
+          <span style="color:var(--purple);">${d.fromOffice||''}</span>
+          <span style="color:var(--text2);"> → </span>
+          <span style="color:var(--green);">${d.toOffice||''}</span>
+        </div>
+        <div style="font-size:12px;color:var(--text2);">${d.category||''} · 担当：${d.staff||''}</div>
+        ${tracking}
+        <div style="margin-top:6px;">${arrivedBadge} ${evalBadge}</div>
+        ${d.note?`<div style="font-size:12px;color:var(--text2);margin-top:4px;border-top:0.5px solid var(--border2);padding-top:4px;">${d.note}</div>`:''}
+      </div>`;
+    }).join('');
+  }catch(e){
+    listEl.innerHTML='<div class="loading">読み込みエラー</div>';
+  }
 }
 
 // 移動履歴
