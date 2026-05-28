@@ -314,6 +314,12 @@ textarea{min-height:72px;resize:none;}
             <span style="font-size:12px;font-weight:600;color:var(--red);">ランキング</span>
           </button>
 
+          <button onclick="switchPage('board',document.getElementById('nav-board'),'商品マッチング','欲しい商品をリクエスト');loadBoard()"
+            style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 8px;background:#EAF3DE;border:none;border-radius:var(--radius);cursor:pointer;-webkit-tap-highlight-color:transparent;font-family:inherit;grid-column:span 3;">
+            <i class="ti ti-layout-board" style="font-size:28px;color:#3B6D11;" aria-hidden="true"></i>
+            <span style="font-size:12px;font-weight:600;color:#27500A;">商品マッチング掲示板</span>
+          </button>
+
         </div>
       </div>
     </div>
@@ -597,6 +603,62 @@ textarea{min-height:72px;resize:none;}
       <div id="move-list"><div class="loading">読み込み中...</div></div>
     </div>
 
+    <!-- 商品マッチング掲示板 -->
+    <div class="page" id="pg-board" style="position:relative;">
+      <!-- 投稿成功オーバーレイ -->
+      <div id="board-success" class="success-overlay">
+        <i class="ti ti-speakerphone" style="font-size:64px;color:var(--green);"></i>
+        <div style="font-size:20px;font-weight:700;text-align:center;">リクエスト投稿完了！</div>
+        <div style="font-size:14px;color:var(--text2);text-align:center;">全営業所に通知されました</div>
+        <div style="font-size:12px;color:var(--text2);text-align:center;margin-top:4px;">7日間レスポンスがない場合は自動で削除されます</div>
+        <button class="primary-btn" style="margin-top:12px;margin-bottom:0;" onclick="document.getElementById('board-success').classList.remove('show');loadBoard()">掲示板に戻る</button>
+      </div>
+
+      <!-- 投稿フォーム -->
+      <div id="board-form-wrap" style="display:none;">
+        <div style="font-size:15px;font-weight:600;margin-bottom:12px;">📋 商品リクエストを投稿</div>
+        <div class="card">
+          <div class="field-group"><div class="field-label">欲しい商品名</div>
+            <input type="text" id="board-item" placeholder="例：冷蔵庫 80L前後">
+          </div>
+          <div class="field-group"><div class="field-label">カテゴリ</div>
+            <select id="board-cat">
+              <option>家具</option><option>家電</option><option>家具家電</option>
+              <option>イベント用品</option><option>その他</option>
+            </select>
+          </div>
+          <div class="field-group"><div class="field-label">必要数量</div>
+            <input type="number" id="board-qty" placeholder="例：2" min="1" value="1">
+          </div>
+          <div class="field-group"><div class="field-label">希望時期</div>
+            <input type="text" id="board-timing" placeholder="例：6月中、なるべく早く">
+          </div>
+          <div class="field-group" style="margin-bottom:0;"><div class="field-label">詳細・条件（任意）</div>
+            <textarea id="board-note" placeholder="例：新品に近いものを希望、色はホワイト系"></textarea>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button onclick="document.getElementById('board-form-wrap').style.display='none';"
+            style="flex:1;padding:14px;background:var(--bg3);color:var(--text2);border:none;border-radius:var(--radius);font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;">キャンセル</button>
+          <button onclick="postBoardRequest()"
+            style="flex:2;padding:14px;background:var(--green);color:#fff;border:none;border-radius:var(--radius);font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;">投稿する</button>
+        </div>
+        <div style="height:8px;"></div>
+      </div>
+
+      <!-- 掲示板一覧 -->
+      <div id="board-list-wrap">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <div style="font-size:13px;color:var(--text2);">全営業所からのリクエスト（7日間有効）</div>
+          <button onclick="document.getElementById('board-form-wrap').style.display='block';document.getElementById('board-list-wrap').style.display='none';"
+            style="padding:8px 14px;background:var(--green);color:#fff;border:none;border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">
+            <i class="ti ti-plus" style="vertical-align:-2px;"></i> リクエスト
+          </button>
+        </div>
+        <div id="board-list"><div class="loading">読み込み中...</div></div>
+      </div>
+    </div>
+
   </div>
 
   <div class="bottomnav" style="justify-content:center;">
@@ -608,6 +670,7 @@ textarea{min-height:72px;resize:none;}
     <button class="nav-btn" id="nav-move" style="display:none;"></button>
     <button class="nav-btn" id="nav-rank" style="display:none;"></button>
     <button class="nav-btn" id="nav-knowledge" style="display:none;"></button>
+    <button class="nav-btn" id="nav-board" style="display:none;"></button>
   </div>
 </div>
 
@@ -1051,6 +1114,152 @@ function filterKnowledge(){
   renderKnowledge(allKnowledge.filter(k=>(k.title||'').toLowerCase().includes(kw)||(k.tag||'').toLowerCase().includes(kw)));
 }
 function showAddKnowledge(){showToast('ナレッジ投稿機能は準備中です');}
+
+// ===== 商品マッチング掲示板 =====
+async function postBoardRequest(){
+  const item=document.getElementById('board-item').value.trim();
+  const cat=document.getElementById('board-cat').value;
+  const qty=parseInt(document.getElementById('board-qty').value)||1;
+  const timing=document.getElementById('board-timing').value.trim();
+  const note=document.getElementById('board-note').value.trim();
+  if(!item){showToast('欲しい商品名を入力してください');return;}
+  try{
+    const expireAt=new Date();
+    expireAt.setDate(expireAt.getDate()+7);
+    await window.fsAddDoc(window.fsCollection(window.db,'board'),{
+      itemName:item,
+      category:cat,
+      quantity:qty,
+      timing:timing||'未定',
+      note,
+      requestOffice:currentOffice,
+      requestBy:currentName,
+      status:'open',
+      responses:[],
+      expireAt,
+      createdAt:window.fsServerTimestamp(),
+    });
+    document.getElementById('board-item').value='';
+    document.getElementById('board-qty').value='1';
+    document.getElementById('board-timing').value='';
+    document.getElementById('board-note').value='';
+    document.getElementById('board-form-wrap').style.display='none';
+    document.getElementById('board-list-wrap').style.display='block';
+    document.getElementById('board-success').classList.add('show');
+  }catch(e){
+    showToast('投稿に失敗しました。もう一度お試しください。');
+  }
+}
+
+async function loadBoard(){
+  if(!window.db) return;
+  document.getElementById('board-form-wrap').style.display='none';
+  document.getElementById('board-list-wrap').style.display='block';
+  document.getElementById('board-success').classList.remove('show');
+  const listEl=document.getElementById('board-list');
+  listEl.innerHTML='<div class="loading">読み込み中...</div>';
+  try{
+    const now=new Date();
+    const q=window.fsQuery(
+      window.fsCollection(window.db,'board'),
+      window.fsWhere('status','==','open'),
+      window.fsOrderBy('createdAt','desc'),
+      window.fsLimit(50)
+    );
+    const snap=await window.fsGetDocs(q);
+    let docs=snap.docs.map(d=>({id:d.id,...d.data()}));
+    // 7日経過したものをフィルタ（クライアント側で除外）
+    docs=docs.filter(d=>{
+      if(!d.expireAt) return true;
+      const exp=d.expireAt.toDate?d.expireAt.toDate():new Date(d.expireAt);
+      return exp>now;
+    });
+    if(docs.length===0){
+      listEl.innerHTML=`<div style="text-align:center;padding:32px 20px;">
+        <div style="font-size:40px;margin-bottom:10px;">📋</div>
+        <div style="font-size:14px;font-weight:600;color:var(--text2);">リクエストはまだありません</div>
+        <div style="font-size:13px;color:var(--text2);margin-top:6px;">「＋リクエスト」から欲しい商品を投稿してみましょう</div>
+      </div>`;
+      return;
+    }
+    listEl.innerHTML=docs.map(d=>{
+      const isMyPost=d.requestOffice===currentOffice;
+      const respCount=d.responses?.length||0;
+      const expireAt=d.expireAt?.toDate?d.expireAt.toDate():new Date(d.expireAt||Date.now());
+      const daysLeft=Math.max(0,Math.ceil((expireAt-now)/(1000*60*60*24)));
+      const daysStyle=daysLeft<=2?'color:var(--red);':'color:var(--text2);';
+      const createdDate=d.createdAt?.toDate?d.createdAt.toDate().toLocaleDateString('ja-JP'):'';
+      return `<div class="hist-item" style="border-left:3px solid ${isMyPost?'var(--purple)':'var(--green)'};">
+        <div class="hist-top">
+          <span class="hist-name">${d.itemName||'商品名なし'} ×${d.quantity||1}</span>
+          <span class="badge ${respCount>0?'badge-good':'badge-mid'}">${respCount>0?`👍 ${respCount}件`:'未反応'}</span>
+        </div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:4px;">
+          ${isMyPost?'<span style="color:var(--purple);font-weight:600;">自分の投稿</span>':d.requestOffice||''}
+          · ${d.category||''} · 希望：${d.timing||'未定'}
+        </div>
+        ${d.note?`<div style="font-size:12px;color:var(--text2);margin-bottom:6px;">${d.note}</div>`:''}
+        <div style="font-size:11px;${daysStyle}margin-bottom:8px;">⏱ 残り${daysLeft}日 · ${createdDate}</div>
+        ${isMyPost
+          ?`<button onclick="deleteBoard('${d.id}')" style="width:100%;padding:8px;background:var(--red-light);color:var(--red);border:1px solid var(--red);border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">🗑 投稿を削除</button>`
+          :`<button onclick="respondBoard('${d.id}','${(d.itemName||'').replace(/'/g,'').replace(/"/g,'')}','${d.requestOffice||''}','${d.category||''}')" style="width:100%;padding:10px;background:var(--green);color:#fff;border:none;border-radius:var(--radius-sm);font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;"><i class="ti ti-hand-finger" style="vertical-align:-2px;margin-right:4px;"></i>提供できます！</button>`
+        }
+      </div>`;
+    }).join('');
+  }catch(e){
+    listEl.innerHTML='<div class="loading">読み込みエラー</div>';
+  }
+}
+
+// 「提供できます！」をタップ
+async function respondBoard(boardId, itemName, requestOffice, category){
+  try{
+    const firestoreModule=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    const ref=firestoreModule.doc(window.db,'board',boardId);
+    await firestoreModule.updateDoc(ref,{
+      responses: firestoreModule.arrayUnion({
+        office:currentOffice,
+        name:currentName,
+        respondedAt:new Date().toISOString()
+      }),
+      status:'matched'
+    });
+    showToast('✅ 提供を申し出ました！出庫登録画面に移動します');
+    // 出庫登録画面に自動移動・自動入力
+    setTimeout(()=>{
+      switchPage('ship',document.getElementById('nav-ship'),'出庫登録','商品を送り出すとき');
+      // 送り先・商品名を自動入力
+      document.getElementById('ship-to').value=requestOffice;
+      // カテゴリを自動入力
+      const catSel=document.getElementById('ship-cat');
+      for(let i=0;i<catSel.options.length;i++){
+        if(catSel.options[i].value===category){catSel.selectedIndex=i;break;}
+      }
+      // 商品名を自動入力
+      if(document.getElementById('ship-items-list').children.length===0) addShipItem();
+      setTimeout(()=>{
+        const firstInput=document.getElementById('ship-item-name-1');
+        if(firstInput) firstInput.value=itemName;
+      },100);
+    },1000);
+  }catch(e){
+    showToast('エラーが発生しました。もう一度お試しください。');
+  }
+}
+
+// 投稿を削除
+async function deleteBoard(boardId){
+  if(!confirm('この投稿を削除しますか？')) return;
+  try{
+    const firestoreModule=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    const ref=firestoreModule.doc(window.db,'board',boardId);
+    await firestoreModule.deleteDoc(ref);
+    showToast('投稿を削除しました');
+    loadBoard();
+  }catch(e){
+    showToast('削除に失敗しました');
+  }
+}
 
 // 商品リスト管理
 let shipItemCount = 0;
