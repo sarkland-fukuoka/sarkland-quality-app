@@ -234,6 +234,9 @@ textarea{min-height:72px;resize:none;}
         <i class="ti ti-bell" style="font-size:22px;color:#6e6e73;"></i>
         <div class="notif-dot" id="notif-dot"></div>
       </div>
+      <button class="icon-btn" onclick="switchPage('passwd',document.getElementById('nav-passwd'),'パスワード変更','営業所パスワードの変更');document.getElementById('passwd-office-name').textContent=currentOffice;" title="パスワード変更">
+        <i class="ti ti-lock" style="font-size:20px;"></i>
+      </button>
       <button class="icon-btn" onclick="doLogout()"><i class="ti ti-logout" style="font-size:20px;"></i></button>
     </div>
   </div>
@@ -659,6 +662,31 @@ textarea{min-height:72px;resize:none;}
       </div>
     </div>
 
+    <!-- パスワード変更 -->
+    <div class="page" id="pg-passwd">
+      <div class="card">
+        <div style="font-size:14px;font-weight:600;margin-bottom:4px;">現在の営業所</div>
+        <div style="font-size:15px;color:var(--purple);font-weight:700;margin-bottom:16px;" id="passwd-office-name"></div>
+        <div class="field-group">
+          <div class="field-label">現在のパスワード</div>
+          <input type="password" id="passwd-current" placeholder="現在のパスワードを入力" autocomplete="current-password">
+        </div>
+        <div class="field-group">
+          <div class="field-label">新しいパスワード</div>
+          <input type="password" id="passwd-new" placeholder="新しいパスワードを入力" autocomplete="new-password">
+        </div>
+        <div class="field-group" style="margin-bottom:0;">
+          <div class="field-label">新しいパスワード（確認）</div>
+          <input type="password" id="passwd-confirm" placeholder="もう一度入力" autocomplete="new-password">
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--text2);background:var(--bg3);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:14px;">
+        <i class="ti ti-info-circle" style="vertical-align:-2px;margin-right:4px;"></i>
+        パスワードは営業所単位で管理されます。変更後は全スタッフに新しいパスワードを共有してください。
+      </div>
+      <button class="primary-btn" onclick="doChangePassword()" style="margin-bottom:0;">パスワードを変更する</button>
+    </div>
+
   </div>
 
   <div class="bottomnav" style="justify-content:center;">
@@ -671,6 +699,7 @@ textarea{min-height:72px;resize:none;}
     <button class="nav-btn" id="nav-rank" style="display:none;"></button>
     <button class="nav-btn" id="nav-knowledge" style="display:none;"></button>
     <button class="nav-btn" id="nav-board" style="display:none;"></button>
+    <button class="nav-btn" id="nav-passwd" style="display:none;"></button>
   </div>
 </div>
 
@@ -753,16 +782,98 @@ function doLogin(){
   const name=document.getElementById('login-name').value.trim();
   const pw=document.getElementById('login-pw').value.trim();
   const err=document.getElementById('login-err');
-  if(!sel||!name||!pw){err.style.display='block';return;}
+  if(!sel||!name||!pw){err.style.display='block';err.textContent='営業所・担当者名・パスワードを正しく入力してください';return;}
   const office=OFFICES[sel];
-  if(!office||pw!==office.pw){err.style.display='block';err.textContent='パスワードが正しくありません';return;}
-  err.style.display='none';
-  // ログイン情報を保存（次回自動ログイン）
+  if(!office){err.style.display='block';err.textContent='営業所を選択してください';return;}
+  // Firestoreのパスワードを確認（非同期）
+  doLoginAsync(sel, office, name, pw, err);
+}
+
+async function doLoginAsync(sel, office, name, pw, err){
+  const btn=document.querySelector('.login-screen .primary-btn');
+  if(btn){btn.disabled=true;btn.textContent='確認中...';}
   try{
-    localStorage.setItem('sark_office_key', sel);
-    localStorage.setItem('sark_name', name);
+    const savedPw=await getOfficePassword(office.name);
+    if(pw!==savedPw){
+      err.style.display='block';err.textContent='パスワードが正しくありません';
+      if(btn){btn.disabled=false;btn.textContent='ログイン';}
+      return;
+    }
+    err.style.display='none';
+    try{
+      localStorage.setItem('sark_office_key', sel);
+      localStorage.setItem('sark_name', name);
+    }catch(e){}
+    doLoginSuccess(office.name, name);
+  }catch(e){
+    // Firestore接続エラー時はデフォルトパスワードで認証
+    if(pw!==office.pw){
+      err.style.display='block';err.textContent='パスワードが正しくありません';
+    } else {
+      err.style.display='none';
+      doLoginSuccess(office.name, name);
+    }
+  }
+  if(btn){btn.disabled=false;btn.textContent='ログイン';}
+}
+
+// Firestoreまたはデフォルトのパスワードを取得
+async function getOfficePassword(officeName){
+  try{
+    const q=window.fsQuery(
+      window.fsCollection(window.db,'passwords'),
+      window.fsWhere('officeName','==',officeName),
+      window.fsLimit(1)
+    );
+    const snap=await window.fsGetDocs(q);
+    if(!snap.empty) return snap.docs[0].data().password;
   }catch(e){}
-  doLoginSuccess(office.name, name);
+  // Firestoreになければデフォルトパスワードを返す
+  const entry=Object.values(OFFICES).find(o=>o.name===officeName);
+  return entry?entry.pw:null;
+}
+
+// パスワード変更
+async function doChangePassword(){
+  const current=document.getElementById('passwd-current').value.trim();
+  const newPw=document.getElementById('passwd-new').value.trim();
+  const confirm=document.getElementById('passwd-confirm').value.trim();
+  if(!current||!newPw||!confirm){showToast('すべての項目を入力してください');return;}
+  if(newPw!==confirm){showToast('新しいパスワードが一致しません');return;}
+  if(newPw.length<6){showToast('パスワードは6文字以上にしてください');return;}
+  try{
+    const savedPw=await getOfficePassword(currentOffice);
+    if(current!==savedPw){showToast('現在のパスワードが正しくありません');return;}
+    const firestoreModule=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    const q=window.fsQuery(
+      window.fsCollection(window.db,'passwords'),
+      window.fsWhere('officeName','==',currentOffice),
+      window.fsLimit(1)
+    );
+    const snap=await window.fsGetDocs(q);
+    if(!snap.empty){
+      const ref=firestoreModule.doc(window.db,'passwords',snap.docs[0].id);
+      await firestoreModule.updateDoc(ref,{
+        password:newPw,
+        updatedAt:window.fsServerTimestamp(),
+        updatedBy:currentName
+      });
+    } else {
+      await window.fsAddDoc(window.fsCollection(window.db,'passwords'),{
+        officeName:currentOffice,
+        password:newPw,
+        updatedAt:window.fsServerTimestamp(),
+        updatedBy:currentName
+      });
+    }
+    document.getElementById('passwd-current').value='';
+    document.getElementById('passwd-new').value='';
+    document.getElementById('passwd-confirm').value='';
+    showToast('✅ パスワードを変更しました！全スタッフに共有してください');
+    setTimeout(()=>switchPage('home',document.getElementById('nav-home'),'ダッシュボード',''),1500);
+  }catch(e){
+    showToast('変更に失敗しました。もう一度お試しください。');
+  }
 }
 
 function doLoginSuccess(officeName, name){
