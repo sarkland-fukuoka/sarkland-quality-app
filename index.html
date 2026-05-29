@@ -1268,7 +1268,7 @@ function filterKnowledge(){
   const kw=document.getElementById('knowledge-search').value.toLowerCase();
   renderKnowledge(allKnowledge.filter(k=>(k.title||'').toLowerCase().includes(kw)||(k.tag||'').toLowerCase().includes(kw)));
 }
-// 営業所別スコア
+// 営業所別スコア（ベイズ平均対応）
 async function loadOfficeScore(){
   if(!window.db) return;
   const el=document.getElementById('officescore-content');
@@ -1286,13 +1286,17 @@ async function loadOfficeScore(){
       return;
     }
 
-    // 営業所別に集計
+    // 全社平均・総件数
+    const totalAvg=docs.reduce((s,d)=>s+(d.totalScore||0),0)/docs.length;
+    const MIN_COUNT=5; // 信頼度計算の基準件数
+
+    // 営業所別集計
     const offData={};
     docs.forEach(d=>{
       if(!d.fromOffice) return;
       if(!offData[d.fromOffice]) offData[d.fromOffice]={
-        sum:0, count:0, flags:0,
-        clean:[], looks:[], parts:[], pack:[]
+        sum:0,count:0,flags:0,
+        clean:[],looks:[],parts:[],pack:[]
       };
       offData[d.fromOffice].sum+=d.totalScore||0;
       offData[d.fromOffice].count++;
@@ -1305,69 +1309,86 @@ async function loadOfficeScore(){
       }
     });
 
-    const ranked=Object.entries(offData)
-      .map(([name,d])=>({
+    // ベイズ平均で補正
+    const ranked=Object.entries(offData).map(([name,d])=>{
+      const realAvg=d.sum/d.count;
+      // ベイズ補正スコア
+      const bayesAvg=(d.count*realAvg + MIN_COUNT*totalAvg)/(d.count+MIN_COUNT);
+      // 信頼度（0〜5段階）
+      const reliability=Math.min(5,Math.round(d.count/MIN_COUNT*5));
+      const avg=k=>d[k].length?(d[k].reduce((s,v)=>s+v,0)/d[k].length).toFixed(1):'-';
+      return {
         name,
-        avg:d.sum/d.count,
+        realAvg,
+        bayesAvg,
         count:d.count,
         flags:d.flags,
-        clean:d.clean.length?(d.clean.reduce((s,v)=>s+v,0)/d.clean.length).toFixed(1):'-',
-        looks:d.looks.length?(d.looks.reduce((s,v)=>s+v,0)/d.looks.length).toFixed(1):'-',
-        parts:d.parts.length?(d.parts.reduce((s,v)=>s+v,0)/d.parts.length).toFixed(1):'-',
-        pack: d.pack.length?(d.pack.reduce((s,v)=>s+v,0)/d.pack.length).toFixed(1):'-',
-      }))
-      .sort((a,b)=>b.avg-a.avg);
+        reliability,
+        clean:avg('clean'),
+        looks:avg('looks'),
+        parts:avg('parts'),
+        pack:avg('pack'),
+      };
+    }).sort((a,b)=>b.bayesAvg-a.bayesAvg);
 
     const medals=['🥇','🥈','🥉'];
-    const totalAvg=(docs.reduce((s,d)=>s+(d.totalScore||0),0)/docs.length).toFixed(1);
 
     el.innerHTML=`
       <!-- 全社平均 -->
-      <div style="background:var(--green-light);border-radius:var(--radius);padding:14px 16px;margin-bottom:12px;">
+      <div style="background:var(--green-light);border-radius:var(--radius);padding:14px 16px;margin-bottom:10px;">
         <div style="font-size:13px;font-weight:600;color:var(--green);">🌐 全社平均スコア</div>
-        <div style="font-size:32px;font-weight:700;color:var(--green);margin:4px 0;">${totalAvg}</div>
-        <div style="font-size:12px;color:var(--text2);">評価件数：${docs.length}件 · 参加営業所：${ranked.length}拠点</div>
+        <div style="font-size:32px;font-weight:700;color:var(--green);margin:4px 0;">${totalAvg.toFixed(1)}</div>
+        <div style="font-size:12px;color:var(--text2);">評価件数：${docs.length}件 · ${ranked.length}拠点参加</div>
       </div>
 
-      <!-- フィルター -->
-      <div style="display:flex;gap:8px;margin-bottom:12px;">
-        <button id="score-filter-all" onclick="filterOfficeScore('all')" style="flex:1;padding:8px;background:var(--purple);color:#fff;border:none;border-radius:var(--radius-sm);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">全期間</button>
-        <button id="score-filter-month" onclick="filterOfficeScore('month')" style="flex:1;padding:8px;background:var(--bg3);color:var(--text2);border:none;border-radius:var(--radius-sm);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">今月</button>
-        <button id="score-filter-high" onclick="filterOfficeScore('high')" style="flex:1;padding:8px;background:var(--bg3);color:var(--text2);border:none;border-radius:var(--radius-sm);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">高評価順</button>
-        <button id="score-filter-low" onclick="filterOfficeScore('low')" style="flex:1;padding:8px;background:var(--bg3);color:var(--text2);border:none;border-radius:var(--radius-sm);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">低評価順</button>
+      <!-- 説明 -->
+      <div style="background:var(--purple-light);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:12px;font-size:12px;color:var(--purple-dark);">
+        <i class="ti ti-info-circle" style="vertical-align:-2px;margin-right:4px;"></i>
+        <b>補正スコア</b>とは件数の少ない営業所を全社平均に近づけた公平な評価です。信頼度●が多いほど実績が豊富です。
       </div>
 
       <!-- 営業所一覧 -->
-      <div id="officescore-list">
-        ${ranked.map((o,i)=>{
-          const color=o.avg>=4?'var(--green)':o.avg>=3?'var(--purple)':'var(--red)';
-          const badgeClass=o.avg>=4?'badge-good':o.avg>=3?'badge-mid':'badge-bad';
-          const medal=medals[i]||`${i+1}位`;
-          const pct=(o.avg/5*100).toFixed(0);
-          return `<div class="card" style="margin-bottom:8px;">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-              <div>
-                <span style="font-size:14px;font-weight:700;">${medal} ${o.name}</span>
-                <span style="font-size:11px;color:var(--text2);margin-left:8px;">${o.count}件評価</span>
+      ${ranked.map((o,i)=>{
+        const color=o.bayesAvg>=4?'var(--green)':o.bayesAvg>=3?'var(--purple)':'var(--red)';
+        const badgeClass=o.bayesAvg>=4?'badge-good':o.bayesAvg>=3?'badge-mid':'badge-bad';
+        const medal=medals[i]||`${i+1}`;
+        const pct=(o.bayesAvg/5*100).toFixed(0);
+        const realPct=(o.realAvg/5*100).toFixed(0);
+        const reliabilityDots='●'.repeat(o.reliability)+'○'.repeat(5-o.reliability);
+        const reliabilityColor=o.reliability>=4?'var(--green)':o.reliability>=2?'var(--orange)':'var(--red)';
+        return `<div class="card" style="margin-bottom:8px;">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+            <div>
+              <span style="font-size:14px;font-weight:700;">${medal} ${o.name}</span>
+              <div style="font-size:11px;color:${reliabilityColor};margin-top:2px;">
+                信頼度：${reliabilityDots}（${o.count}件）
               </div>
-              <span class="badge ${badgeClass}" style="font-size:14px;">${o.avg.toFixed(1)}</span>
             </div>
-            <!-- 総合バー -->
-            <div class="prog-row" style="margin-bottom:6px;">
-              <div class="prog-lbl" style="font-size:11px;">総合</div>
-              <div class="prog-track"><div class="prog-fill" style="width:${pct}%;background:${color};"></div></div>
+            <div style="text-align:right;">
+              <span class="badge ${badgeClass}" style="font-size:15px;display:block;margin-bottom:3px;">${o.bayesAvg.toFixed(1)}</span>
+              <span style="font-size:10px;color:var(--text2);">実績：${o.realAvg.toFixed(1)}</span>
             </div>
-            <!-- 項目別 -->
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;margin-top:6px;">
-              <div style="font-size:11px;color:var(--text2);">✨清潔感　<span style="font-weight:600;color:var(--text);">${o.clean}</span></div>
-              <div style="font-size:11px;color:var(--text2);">👁外観・傷　<span style="font-weight:600;color:var(--text);">${o.looks}</span></div>
-              <div style="font-size:11px;color:var(--text2);">📦付属品　<span style="font-weight:600;color:var(--text);">${o.parts}</span></div>
-              <div style="font-size:11px;color:var(--text2);">📫梱包　<span style="font-weight:600;color:var(--text);">${o.pack}</span></div>
-            </div>
-            ${o.flags>0?`<div style="font-size:11px;color:var(--red);margin-top:6px;">⚠ 要改善フラグ：${o.flags}件</div>`:''}
-          </div>`;
-        }).join('')}
-      </div>
+          </div>
+          <!-- 補正スコアバー -->
+          <div style="margin-bottom:4px;">
+            <div style="font-size:10px;color:var(--text2);margin-bottom:2px;">補正スコア</div>
+            <div class="prog-track"><div class="prog-fill" style="width:${pct}%;background:${color};"></div></div>
+          </div>
+          <!-- 実スコアバー -->
+          <div style="margin-bottom:8px;">
+            <div style="font-size:10px;color:var(--text2);margin-bottom:2px;">実スコア</div>
+            <div class="prog-track"><div class="prog-fill" style="width:${realPct}%;background:var(--border);"></div></div>
+          </div>
+          <!-- 項目別 -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:3px 12px;">
+            <div style="font-size:11px;color:var(--text2);">✨清潔感　<b>${o.clean}</b></div>
+            <div style="font-size:11px;color:var(--text2);">👁外観　<b>${o.looks}</b></div>
+            <div style="font-size:11px;color:var(--text2);">📦付属品　<b>${o.parts}</b></div>
+            <div style="font-size:11px;color:var(--text2);">📫梱包　<b>${o.pack}</b></div>
+          </div>
+          ${o.flags>0?`<div style="font-size:11px;color:var(--red);margin-top:6px;">⚠ 要改善フラグ：${o.flags}件</div>`:''}
+        </div>`;
+      }).join('')}
     `;
   }catch(e){
     el.innerHTML='<div class="loading">読み込みエラー</div>';
@@ -1375,7 +1396,6 @@ async function loadOfficeScore(){
 }
 
 function filterOfficeScore(type){
-  // フィルターボタンの色を切り替え
   ['all','month','high','low'].forEach(t=>{
     const btn=document.getElementById('score-filter-'+t);
     if(btn){
@@ -1383,7 +1403,6 @@ function filterOfficeScore(type){
       btn.style.color=t===type?'#fff':'var(--text2)';
     }
   });
-  // 現状はUI切り替えのみ（将来的にFirestoreフィルタ対応）
   showToast(type==='month'?'今月のデータを表示':type==='high'?'高評価順に並び替え':type==='low'?'低評価順に並び替え':'全期間のデータを表示');
 }
   if(!window.db) return;
