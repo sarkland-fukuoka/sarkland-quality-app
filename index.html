@@ -1415,6 +1415,9 @@ function filterOfficeScore(type){
   });
   showToast(type==='month'?'今月のデータを表示':type==='high'?'高評価順に並び替え':type==='low'?'低評価順に並び替え':'全期間のデータを表示');
 }
+
+// 月次レポート
+async function loadMonthlyReport(){
   if(!window.db) return;
   const el=document.getElementById('monthly-content');
   el.innerHTML='<div class="loading">読み込み中...</div>';
