@@ -166,7 +166,7 @@ textarea{min-height:72px;resize:none;}
     <div class="card">
       <div class="field-group">
         <div class="field-label">営業所</div>
-        <select id="login-office">
+        <select id="login-office" autocomplete="username">
           <option value="">-- 選択してください --</option>
           <option value="札幌営業所|sark-sapporo">札幌営業所</option>
           <option value="盛岡営業所|sark-morioka">盛岡営業所</option>
@@ -197,11 +197,11 @@ textarea{min-height:72px;resize:none;}
       </div>
       <div class="field-group">
         <div class="field-label">担当者名（現場スタッフ）</div>
-        <input type="text" id="login-name" placeholder="例：田中 太郎">
+        <input type="text" id="login-name" placeholder="例：田中 太郎" autocomplete="name">
       </div>
       <div class="field-group">
         <div class="field-label">営業所パスワード</div>
-        <input type="password" id="login-pw" placeholder="所長にお問い合わせください">
+        <input type="password" id="login-pw" placeholder="所長にお問い合わせください" autocomplete="current-password">
       </div>
     </div>
     <div class="pw-note">
@@ -704,8 +704,9 @@ window.fsServerTimestamp = serverTimestamp;
 
 // 初期データ読み込み
 window.addEventListener('load', () => {
-  if(document.getElementById('screen-main').style.display !== 'none'){
-    loadDashboard();
+  // 自動ログインを試みる
+  if(!tryAutoLogin()){
+    document.getElementById('screen-login').style.display='block';
   }
 });
 </script>
@@ -756,16 +757,39 @@ function doLogin(){
   const office=OFFICES[sel];
   if(!office||pw!==office.pw){err.style.display='block';err.textContent='パスワードが正しくありません';return;}
   err.style.display='none';
-  currentOffice=office.name; currentName=name;
-  document.getElementById('disp-office').textContent=office.name;
+  // ログイン情報を保存（次回自動ログイン）
+  try{
+    localStorage.setItem('sark_office_key', sel);
+    localStorage.setItem('sark_name', name);
+  }catch(e){}
+  doLoginSuccess(office.name, name);
+}
+
+function doLoginSuccess(officeName, name){
+  currentOffice=officeName; currentName=name;
+  document.getElementById('disp-office').textContent=officeName;
   document.getElementById('disp-name').textContent=name;
-  document.getElementById('page-sub').textContent=office.name;
+  document.getElementById('page-sub').textContent=officeName;
   document.getElementById('screen-login').style.display='none';
   document.getElementById('screen-main').style.display='flex';
   loadDashboard();
 }
 
+// 自動ログイン（保存済み情報があれば）
+function tryAutoLogin(){
+  try{
+    const savedKey=localStorage.getItem('sark_office_key');
+    const savedName=localStorage.getItem('sark_name');
+    if(savedKey&&savedName&&OFFICES[savedKey]){
+      doLoginSuccess(OFFICES[savedKey].name, savedName);
+      return true;
+    }
+  }catch(e){}
+  return false;
+}
+
 function doLogout(){
+  try{ localStorage.removeItem('sark_office_key'); localStorage.removeItem('sark_name'); }catch(e){}
   document.getElementById('screen-main').style.display='none';
   document.getElementById('screen-login').style.display='block';
   document.getElementById('login-pw').value='';
