@@ -805,34 +805,44 @@ function doLogin(){
   if(!sel||!name||!pw){err.style.display='block';err.textContent='営業所・担当者名・パスワードを正しく入力してください';return;}
   const office=OFFICES[sel];
   if(!office){err.style.display='block';err.textContent='営業所を選択してください';return;}
-  // Firestoreのパスワードを確認（非同期）
-  doLoginAsync(sel, office, name, pw, err);
-}
 
-async function doLoginAsync(sel, office, name, pw, err){
-  const btn=document.querySelector('.login-screen .primary-btn');
-  if(btn){btn.disabled=true;btn.textContent='確認中...';}
-  try{
-    const savedPw=await getOfficePassword(office.name);
-    if(pw!==savedPw){
-      err.style.display='block';err.textContent='パスワードが正しくありません';
-      if(btn){btn.disabled=false;btn.textContent='ログイン';}
-      return;
-    }
+  // まずデフォルトパスワードで即時確認
+  if(pw===office.pw){
     err.style.display='none';
     try{
       localStorage.setItem('sark_office_key', sel);
       localStorage.setItem('sark_name', name);
     }catch(e){}
     doLoginSuccess(office.name, name);
-  }catch(e){
-    // Firestore接続エラー時はデフォルトパスワードで認証
-    if(pw!==office.pw){
-      err.style.display='block';err.textContent='パスワードが正しくありません';
-    } else {
+    return;
+  }
+
+  // デフォルトと違う場合はFirestoreの変更済みパスワードを確認
+  doLoginWithFirestore(sel, office, name, pw, err);
+}
+
+async function doLoginWithFirestore(sel, office, name, pw, err){
+  const btn=document.querySelector('.login-screen .primary-btn');
+  if(btn){btn.disabled=true;btn.textContent='確認中...';}
+  try{
+    const savedPw=await Promise.race([
+      getOfficePassword(office.name),
+      new Promise((_,reject)=>setTimeout(()=>reject(new Error('timeout')),5000))
+    ]);
+    if(pw===savedPw){
       err.style.display='none';
+      try{
+        localStorage.setItem('sark_office_key', sel);
+        localStorage.setItem('sark_name', name);
+      }catch(e){}
       doLoginSuccess(office.name, name);
+    } else {
+      err.style.display='block';
+      err.textContent='パスワードが正しくありません';
     }
+  }catch(e){
+    err.style.display='block';
+    err.textContent='パスワードが正しくありません';
   }
   if(btn){btn.disabled=false;btn.textContent='ログイン';}
 }
