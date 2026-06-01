@@ -85,6 +85,13 @@ textarea{min-height:72px;resize:none;}
 .badge-bad{background:var(--red-light);color:var(--red);}
 .flags{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
 .flag-btn{display:flex;align-items:center;gap:8px;padding:12px;border:0.5px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;font-size:13px;font-weight:500;color:var(--text2);background:var(--bg);-webkit-tap-highlight-color:transparent;font-family:inherit;}
+.edit-flag-btn{padding:9px 14px;border:0.5px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;font-size:13px;font-weight:600;color:var(--text2);background:var(--bg2);font-family:inherit;-webkit-tap-highlight-color:transparent;}
+.edit-flag-btn.active{background:var(--red-light);color:var(--red);border-color:var(--red);}
+.edit-star-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:0.5px solid var(--border2);}
+.edit-star-row .label{font-size:14px;font-weight:600;}
+.edit-star-row .stars{display:flex;gap:4px;}
+.edit-star-row .stars span{font-size:28px;color:#D8D8DD;cursor:pointer;line-height:1;}
+.edit-star-row .stars span.on{color:#F5A623;}
 .flag-btn i{font-size:20px;}
 .flag-btn.active{border-color:var(--purple);background:var(--purple-light);color:var(--purple-dark);}
 .camera-area{border:2px dashed var(--border);border-radius:var(--radius);padding:24px;text-align:center;cursor:pointer;background:var(--bg);margin-bottom:10px;}
@@ -153,6 +160,36 @@ textarea{min-height:72px;resize:none;}
 <body>
 <div class="phone" id="app">
 <div class="toast" id="toast"></div>
+
+<!-- 評価編集モーダル -->
+<div id="edit-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9000;align-items:flex-end;justify-content:center;">
+  <div style="background:var(--bg);width:100%;max-width:430px;border-radius:18px 18px 0 0;padding:20px;max-height:88vh;overflow-y:auto;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <span style="font-size:17px;font-weight:700;">評価を編集</span>
+      <button onclick="closeEditEval()" style="background:none;border:none;font-size:24px;color:var(--text2);cursor:pointer;line-height:1;">×</button>
+    </div>
+    <div id="edit-item-name" style="font-size:14px;font-weight:600;margin-bottom:4px;"></div>
+    <div id="edit-route" style="font-size:12px;color:var(--text2);margin-bottom:16px;"></div>
+
+    <div id="edit-stars"></div>
+
+    <div style="margin-top:14px;">
+      <div style="font-size:13px;font-weight:600;margin-bottom:6px;">フラグ</div>
+      <div id="edit-flags" style="display:flex;flex-wrap:wrap;gap:8px;">
+        <button class="edit-flag-btn" data-flag="付属品欠品">付属品欠品</button>
+        <button class="edit-flag-btn" data-flag="要修理">要修理</button>
+        <button class="edit-flag-btn" data-flag="要連絡">要連絡</button>
+      </div>
+    </div>
+
+    <div style="margin-top:14px;">
+      <div style="font-size:13px;font-weight:600;margin-bottom:6px;">コメント</div>
+      <textarea id="edit-comment" style="width:100%;min-height:70px;" placeholder="コメントを入力"></textarea>
+    </div>
+
+    <button onclick="saveEditEval()" style="width:100%;margin-top:18px;padding:13px;background:var(--purple);color:#fff;border:none;border-radius:var(--radius-sm);font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;">変更を保存</button>
+  </div>
+</div>
 
 <!-- ログイン画面 -->
 <div id="screen-login">
@@ -795,7 +832,7 @@ textarea{min-height:72px;resize:none;}
 <!-- Firebase SDK -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, where, serverTimestamp, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDy1lWyRj2_cnUcuY5gH1EbviQoBqlSCzQ",
@@ -817,6 +854,9 @@ window.fsOrderBy = orderBy;
 window.fsLimit = limit;
 window.fsWhere = where;
 window.fsServerTimestamp = serverTimestamp;
+window.fsDoc = doc;
+window.fsUpdateDoc = updateDoc;
+window.fsDeleteDoc = deleteDoc;
 
 // 初期データ読み込み
 window.addEventListener('load', () => {
@@ -1290,7 +1330,12 @@ async function loadHistory(){
       const date=d.createdAt&&d.createdAt.toDate?d.createdAt.toDate().toLocaleDateString('ja-JP'):'';
       const photoHtml=(d.photos&&d.photos.length>0)?`<div class="hist-photos">${d.photos.map(u=>`<img src="${u}" onclick="openPhoto('${u}')" alt="評価写真">`).join('')}</div>`:'';
       const comment=d.comment?`<div style="font-size:12px;color:var(--text);margin-top:4px;background:var(--bg3);border-radius:var(--radius-sm);padding:6px 10px;">${d.comment}</div>`:'';
-      return `<div class="hist-item"><div class="hist-top"><span class="hist-name">${d.itemName||'商品名なし'}</span><span class="badge ${badgeClass}">${stars}</span></div><div class="hist-meta">${d.fromOffice||''}→${d.toOffice||''} · ${d.category||''} · ${date} · 評価者：${d.evaluator||''}${flags}</div>${comment}${photoHtml}</div>`;
+      const canEdit=d.toOffice===currentOffice;
+      const actions=canEdit?`<div style="display:flex;gap:8px;margin-top:8px;">
+        <button onclick="openEditEval('${d.id}')" style="flex:1;padding:7px;background:var(--bg3);color:var(--purple);border:0.5px solid var(--purple);border-radius:var(--radius-sm);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;"><i class="ti ti-edit" style="vertical-align:-2px;"></i> 編集</button>
+        <button onclick="deleteEval('${d.id}','${(d.itemName||'この評価').replace(/'/g,'')}')" style="flex:1;padding:7px;background:var(--bg3);color:var(--red);border:0.5px solid var(--red);border-radius:var(--radius-sm);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;"><i class="ti ti-trash" style="vertical-align:-2px;"></i> 削除</button>
+      </div>`:'';
+      return `<div class="hist-item"><div class="hist-top"><span class="hist-name">${d.itemName||'商品名なし'}</span><span class="badge ${badgeClass}">${stars}</span></div><div class="hist-meta">${d.fromOffice||''}→${d.toOffice||''} · ${d.category||''} · ${date} · 評価者：${d.evaluator||''}${flags}</div>${comment}${photoHtml}${actions}</div>`;
     }).join('');
   }catch(e){listEl.innerHTML='<div class="loading">読み込みエラー</div>';console.error(e);}
 }
@@ -2277,6 +2322,88 @@ function exportReportPDF(){
   </body></html>`);
   w.document.close();
   setTimeout(()=>{w.print();},400);
+}
+
+// ===== 評価の編集・削除 =====
+let editEvalId=null;
+let editScores={clean:0,looks:0,parts:0,pack:0};
+const EDIT_LABELS={clean:'清潔感・クリーニング',looks:'外観・傷・汚れ',parts:'付属品・部品',pack:'梱包・養生'};
+
+async function openEditEval(id){
+  try{
+    // 該当評価を取得（履歴で表示中のデータから再取得）
+    const snap=await window.fsGetDocs(window.fsQuery(
+      window.fsCollection(window.db,'evaluations'),
+      window.fsOrderBy('createdAt','desc'),
+      window.fsLimit(200)
+    ));
+    let target=null;
+    snap.docs.forEach(doc=>{if(doc.id===id) target={id:doc.id,...doc.data()};});
+    if(!target){showToast('評価が見つかりません');return;}
+    if(target.toOffice!==currentOffice){showToast('この評価は編集できません');return;}
+    editEvalId=id;
+    document.getElementById('edit-item-name').textContent=target.itemName||'商品名なし';
+    document.getElementById('edit-route').textContent=(target.fromOffice||'')+' → '+(target.toOffice||'');
+    editScores={
+      clean:target.scores?target.scores.clean||0:0,
+      looks:target.scores?target.scores.looks||0:0,
+      parts:target.scores?target.scores.parts||0:0,
+      pack:target.scores?target.scores.pack||0:0,
+    };
+    renderEditStars();
+    // フラグ
+    const tflags=target.flags||[];
+    document.querySelectorAll('#edit-flags .edit-flag-btn').forEach(b=>{
+      if(tflags.includes(b.dataset.flag)) b.classList.add('active');
+      else b.classList.remove('active');
+      b.onclick=function(){b.classList.toggle('active');};
+    });
+    document.getElementById('edit-comment').value=target.comment||'';
+    document.getElementById('edit-modal').style.display='flex';
+  }catch(e){showToast('読み込みに失敗しました');console.error(e);}
+}
+function renderEditStars(){
+  const wrap=document.getElementById('edit-stars');
+  wrap.innerHTML=Object.keys(EDIT_LABELS).map(key=>{
+    const stars=[1,2,3,4,5].map(n=>`<span class="${n<=editScores[key]?'on':''}" onclick="setEditScore('${key}',${n})">★</span>`).join('');
+    return `<div class="edit-star-row"><span class="label">${EDIT_LABELS[key]}</span><span class="stars">${stars}</span></div>`;
+  }).join('');
+}
+function setEditScore(key,n){editScores[key]=n;renderEditStars();}
+function closeEditEval(){document.getElementById('edit-modal').style.display='none';editEvalId=null;}
+
+async function saveEditEval(){
+  if(!editEvalId) return;
+  if(editScores.clean===0||editScores.looks===0||editScores.parts===0||editScores.pack===0){
+    showToast('全項目を採点してください');return;
+  }
+  const flags=[...document.querySelectorAll('#edit-flags .edit-flag-btn.active')].map(b=>b.dataset.flag);
+  const comment=document.getElementById('edit-comment').value.trim();
+  const totalScore=(editScores.clean+editScores.looks+editScores.parts+editScores.pack)/4;
+  try{
+    const ref=window.fsDoc(window.db,'evaluations',editEvalId);
+    await window.fsUpdateDoc(ref,{
+      scores:{clean:editScores.clean,looks:editScores.looks,parts:editScores.parts,pack:editScores.pack},
+      totalScore:parseFloat(totalScore.toFixed(2)),
+      flags,
+      comment,
+      editedAt:window.fsServerTimestamp(),
+      editedBy:currentName,
+    });
+    closeEditEval();
+    showToast('✅ 評価を更新しました');
+    loadHistory();
+  }catch(e){showToast('更新に失敗しました');console.error(e);}
+}
+
+async function deleteEval(id,itemName){
+  if(!confirm('「'+itemName+'」の評価を削除しますか？\nこの操作は元に戻せません。')) return;
+  try{
+    const ref=window.fsDoc(window.db,'evaluations',id);
+    await window.fsDeleteDoc(ref);
+    showToast('🗑 評価を削除しました');
+    loadHistory();
+  }catch(e){showToast('削除に失敗しました');console.error(e);}
 }
 
 // 星評価
