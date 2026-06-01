@@ -90,9 +90,14 @@ textarea{min-height:72px;resize:none;}
 .camera-area{border:2px dashed var(--border);border-radius:var(--radius);padding:24px;text-align:center;cursor:pointer;background:var(--bg);margin-bottom:10px;}
 .camera-area i{font-size:40px;color:var(--text2);display:block;margin-bottom:8px;}
 .camera-area span{font-size:14px;color:var(--text2);}
+.photo-uploading{position:absolute;inset:0;background:rgba(0,0,0,.55);color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center;border-radius:var(--radius);}
 .photo-grid{display:none;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
 .photo-thumb{border-radius:var(--radius-sm);overflow:hidden;aspect-ratio:1;background:var(--bg3);position:relative;}
 .photo-thumb img{width:100%;height:100%;object-fit:cover;}
+.hist-photos{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;}
+.hist-photos img{width:64px;height:64px;object-fit:cover;border-radius:var(--radius-sm);cursor:pointer;border:0.5px solid var(--border2);}
+#photo-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;align-items:center;justify-content:center;padding:20px;}
+#photo-modal img{max-width:100%;max-height:100%;border-radius:8px;}
 .photo-remove{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.55);border:none;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#fff;font-size:14px;}
 .primary-btn{width:100%;padding:16px;background:var(--purple);color:#fff;border:none;border-radius:var(--radius);font-size:16px;font-weight:600;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;margin-bottom:8px;}
 .primary-btn:active{background:var(--purple-dark);}
@@ -1074,7 +1079,7 @@ async function loadPendingEvals(){
     listEl.innerHTML=docs.map(d=>{
       const arrivedDate=d.arrivedAt&&d.arrivedAt.toDate?d.arrivedAt.toDate().toLocaleDateString('ja-JP'):'';
       return `<div class="hist-item" style="border-left:3px solid var(--red);margin-bottom:8px;cursor:pointer;"
-        onclick="fillEvalFromPending('${(d.itemName||'').replace(/'/g,'').replace(/"/g,'')}','${d.fromOffice||''}','${d.category||''}','${d.id}')">
+        onclick="fillEvalFromPending('${(d.itemName||'').replace(/'/g,'').replace(/"/g,'')}','${d.fromOffice||''}','${d.category||''}','${d.id}','${d.coreNumber||''}')">
         <div class="hist-top">
           <span class="hist-name">${d.itemName||'商品名なし'} ×${d.quantity||1}</span>
           <span class="badge badge-bad">未評価</span>
@@ -1089,7 +1094,7 @@ async function loadPendingEvals(){
 }
 
 // 未評価リストから情報を自動入力
-function fillEvalFromPending(itemName, fromOffice, category, shipId){
+function fillEvalFromPending(itemName, fromOffice, category, shipId, coreNumber){
   if(fromOffice) document.getElementById('check-from').value=fromOffice;
   if(itemName) document.getElementById('check-item').value=itemName;
   if(category){
@@ -1099,6 +1104,7 @@ function fillEvalFromPending(itemName, fromOffice, category, shipId){
     }
   }
   document.getElementById('pg-check').dataset.shipId=shipId;
+  document.getElementById('pg-check').dataset.coreNumber=coreNumber||'';
   showToast('📝 '+itemName+' の情報を入力しました！採点してください');
 }
 
@@ -1191,7 +1197,8 @@ async function loadHistory(){
       const stars='★'.repeat(Math.round(score))+'☆'.repeat(5-Math.round(score));
       const flags=d.flags&&d.flags.length>0?`<span style="color:var(--red);margin-left:4px;">${d.flags.join('・')}</span>`:'';
       const date=d.createdAt&&d.createdAt.toDate?d.createdAt.toDate().toLocaleDateString('ja-JP'):'';
-      return `<div class="hist-item"><div class="hist-top"><span class="hist-name">${d.itemName||'商品名なし'}</span><span class="badge ${badgeClass}">${stars}</span></div><div class="hist-meta">${d.fromOffice||''}→${d.toOffice||''} · ${d.category||''} · ${date} · ${d.evaluator||''}${flags}</div></div>`;
+      const photoHtml=(d.photos&&d.photos.length>0)?`<div class="hist-photos">${d.photos.map(u=>`<img src="${u}" onclick="openPhoto('${u}')" alt="評価写真">`).join('')}</div>`:'';
+      return `<div class="hist-item"><div class="hist-top"><span class="hist-name">${d.itemName||'商品名なし'}</span><span class="badge ${badgeClass}">${stars}</span></div><div class="hist-meta">${d.fromOffice||''}→${d.toOffice||''} · ${d.category||''} · ${date} · ${d.evaluator||''}${flags}</div>${photoHtml}</div>`;
     }).join('');
   }catch(e){listEl.innerHTML='<div class="loading">読み込みエラー</div>';}
 }
@@ -1877,6 +1884,7 @@ async function loadMove(tab){
   currentMoveTab=tab||currentMoveTab;
   const listEl=document.getElementById('move-list');
   listEl.innerHTML='<div class="loading">読み込み中...</div>';
+  const evalMap=await buildEvalPhotoMap();
   try{
     let q;
     const officeFilter=document.getElementById('move-filter-office')?.value||'';
@@ -1907,7 +1915,7 @@ async function loadMove(tab){
           if(ids.has(d.id)) return false;
           ids.add(d.id); return true;
         }).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
-        renderMoveList(docs,'all');
+        renderMoveList(docs,'all',evalMap);
       } else {
         // 全営業所・全履歴
         q=window.fsQuery(
@@ -1916,7 +1924,7 @@ async function loadMove(tab){
           window.fsLimit(50)
         );
         const snap=await window.fsGetDocs(q);
-        renderMoveList(snap.docs.map(d=>({id:d.id,...d.data()})),'all');
+        renderMoveList(snap.docs.map(d=>({id:d.id,...d.data()})),'all',evalMap);
       }
     } else {
       // 自営業所の送り出し・届いた
@@ -1928,19 +1936,20 @@ async function loadMove(tab){
         window.fsLimit(30)
       );
       const snap=await window.fsGetDocs(q);
-      renderMoveList(snap.docs.map(d=>({id:d.id,...d.data()})),currentMoveTab);
+      renderMoveList(snap.docs.map(d=>({id:d.id,...d.data()})),currentMoveTab,evalMap);
     }
   }catch(e){
     listEl.innerHTML='<div class="loading">読み込みエラー</div>';
   }
 }
 
-function renderMoveList(docs, tab){
+function renderMoveList(docs, tab, evalMap){
   const listEl=document.getElementById('move-list');
   if(docs.length===0){
     listEl.innerHTML='<div class="loading">移動履歴がありません</div>';
     return;
   }
+  evalMap=evalMap||{};
   listEl.innerHTML=docs.map(d=>{
     let arrow;
     if(tab==='out'){
@@ -1958,6 +1967,9 @@ function renderMoveList(docs, tab){
     const tracking=d.trackingNumber?`<div style="font-size:12px;color:var(--text2);margin-top:2px;"><i class="ti ti-barcode" style="vertical-align:-2px;margin-right:3px;"></i>${d.carrier||''} ${d.trackingNumber}</div>`:'';
     const qty=d.quantity?` ×${d.quantity}`:'';
     const arrivedBadge=d.arrived?'<span style="color:var(--green);font-size:11px;font-weight:600;margin-left:6px;">✅到着済</span>':'<span style="color:var(--orange);font-size:11px;font-weight:600;margin-left:6px;">🚚輸送中</span>';
+    // コア番号に紐づく評価写真
+    const evPhotos=evalMap[d.coreNumber]||[];
+    const photoHtml=evPhotos.length>0?`<div class="hist-photos">${evPhotos.map(u=>`<img src="${u}" onclick="openPhoto('${u}')" alt="評価写真">`).join('')}</div>`:'';
     return `<div class="hist-item">
       <div class="hist-top">
         <span class="hist-name">${d.itemName||'商品名なし'}${qty}</span>
@@ -1968,8 +1980,43 @@ function renderMoveList(docs, tab){
       ${tracking}
       ${d.note?`<div style="font-size:12px;color:var(--text2);margin-top:3px;border-top:0.5px solid var(--border2);padding-top:3px;">${d.note}</div>`:''}
       <div style="font-size:11px;color:var(--text2);margin-top:3px;">担当：${d.staff||''}</div>
+      ${photoHtml}
     </div>`;
   }).join('');
+}
+
+// コア番号→評価写真URL配列 のマップを作る
+async function buildEvalPhotoMap(){
+  const map={};
+  try{
+    const snap=await window.fsGetDocs(window.fsQuery(
+      window.fsCollection(window.db,'evaluations'),
+      window.fsOrderBy('createdAt','desc'),
+      window.fsLimit(200)
+    ));
+    snap.docs.forEach(doc=>{
+      const e=doc.data();
+      if(e.coreNumber && e.photos && e.photos.length>0){
+        if(!map[e.coreNumber]) map[e.coreNumber]=[];
+        map[e.coreNumber]=map[e.coreNumber].concat(e.photos);
+      }
+    });
+  }catch(err){console.error('evalPhotoMap error',err);}
+  return map;
+}
+
+// 写真拡大モーダル
+function openPhoto(url){
+  let m=document.getElementById('photo-modal');
+  if(!m){
+    m=document.createElement('div');
+    m.id='photo-modal';
+    m.onclick=function(){m.style.display='none';};
+    m.innerHTML='<img id="photo-modal-img" alt="拡大写真">';
+    document.body.appendChild(m);
+  }
+  document.getElementById('photo-modal-img').src=url;
+  m.style.display='flex';
 }
 
 // 星評価
@@ -2008,18 +2055,55 @@ function updateScore(){
 
 function toggleFlag(btn){btn.classList.toggle('active');}
 
+// Cloudinary設定
+const CLOUDINARY_CLOUD='dy64xqtcg';
+const CLOUDINARY_PRESET='sarkland-quality';
+
+// photos: {url, uploading, localSrc} の配列
 let photos=[];
-function handlePhoto(e){
+async function handlePhoto(e){
   const file=e.target.files[0];if(!file)return;
+  e.target.value='';
+  // ローカルプレビューを先に表示（アップロード中マーク付き）
   const reader=new FileReader();
-  reader.onload=function(ev){photos.push(ev.target.result);renderPhotos();};
-  reader.readAsDataURL(file);e.target.value='';
+  reader.onload=function(ev){
+    const item={url:null,localSrc:ev.target.result,uploading:true};
+    photos.push(item);renderPhotos();
+    uploadToCloudinary(file,item);
+  };
+  reader.readAsDataURL(file);
+}
+async function uploadToCloudinary(file,item){
+  try{
+    const fd=new FormData();
+    fd.append('file',file);
+    fd.append('upload_preset',CLOUDINARY_PRESET);
+    const res=await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`,{method:'POST',body:fd});
+    const data=await res.json();
+    if(data.secure_url){
+      item.url=data.secure_url;
+      item.uploading=false;
+      renderPhotos();
+    }else{
+      throw new Error('upload failed');
+    }
+  }catch(err){
+    console.error('Cloudinary upload error',err);
+    item.uploading=false;
+    item.error=true;
+    renderPhotos();
+    showToast('写真のアップロードに失敗しました');
+  }
 }
 function renderPhotos(){
   const grid=document.getElementById('photo-grid');
   if(!photos.length){grid.style.display='none';grid.innerHTML='';return;}
   grid.style.display='grid';
-  grid.innerHTML=photos.map((src,i)=>`<div class="photo-thumb"><img src="${src}" alt="写真${i+1}"><button class="photo-remove" onclick="removePhoto(${i})"><i class="ti ti-x" style="font-size:13px;"></i></button></div>`).join('');
+  grid.innerHTML=photos.map((p,i)=>{
+    const src=p.url||p.localSrc;
+    const overlay=p.uploading?'<div class="photo-uploading">アップロード中…</div>':(p.error?'<div class="photo-uploading" style="background:rgba(220,50,50,.7);">失敗</div>':'');
+    return `<div class="photo-thumb"><img src="${src}" alt="写真${i+1}">${overlay}<button class="photo-remove" onclick="removePhoto(${i})"><i class="ti ti-x" style="font-size:13px;"></i></button></div>`;
+  }).join('');
 }
 function removePhoto(i){photos.splice(i,1);renderPhotos();}
 
@@ -2045,6 +2129,11 @@ async function doSubmit(){
   const totalScore=(scores.clean+scores.looks+scores.parts+scores.pack)/4;
   const flags=[...document.querySelectorAll('.flag-btn.active')].map(b=>b.textContent.trim());
 
+  // 写真アップロード未完了チェック
+  if(photos.some(p=>p.uploading)){showToast('写真のアップロード中です。少しお待ちください');return;}
+  const photoUrls=photos.filter(p=>p.url).map(p=>p.url);
+  const coreNumber=document.getElementById('pg-check').dataset.coreNumber||'';
+
   const btn=document.getElementById('submit-btn');
   btn.disabled=true; btn.textContent='送信中...';
 
@@ -2055,10 +2144,12 @@ async function doSubmit(){
       evaluator:currentName,
       itemName:item,
       category:cat,
+      coreNumber,
       scores,
       totalScore:parseFloat(totalScore.toFixed(2)),
       flags,
       comment,
+      photos:photoUrls,
       createdAt:window.fsServerTimestamp(),
     });
     // 対応するshipmentのevaluated=trueに更新
@@ -2093,6 +2184,7 @@ function resetCheck(){
   document.getElementById('check-from').value='';
   document.getElementById('check-item').value='';
   document.getElementById('check-comment').value='';
+  delete document.getElementById('pg-check').dataset.coreNumber;
   photos=[];renderPhotos();
   loadPendingEvals();
   loadDashboard();
