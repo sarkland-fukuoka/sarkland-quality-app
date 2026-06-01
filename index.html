@@ -90,10 +90,10 @@ textarea{min-height:72px;resize:none;}
 .camera-area{border:2px dashed var(--border);border-radius:var(--radius);padding:24px;text-align:center;cursor:pointer;background:var(--bg);margin-bottom:10px;}
 .camera-area i{font-size:40px;color:var(--text2);display:block;margin-bottom:8px;}
 .camera-area span{font-size:14px;color:var(--text2);}
-.photo-uploading{position:absolute;inset:0;background:rgba(0,0,0,.55);color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center;border-radius:var(--radius);}
 .photo-grid{display:none;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
 .photo-thumb{border-radius:var(--radius-sm);overflow:hidden;aspect-ratio:1;background:var(--bg3);position:relative;}
 .photo-thumb img{width:100%;height:100%;object-fit:cover;}
+.photo-uploading{position:absolute;inset:0;background:rgba(0,0,0,.55);color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center;border-radius:var(--radius);}
 .hist-photos{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;}
 .hist-photos img{width:64px;height:64px;object-fit:cover;border-radius:var(--radius-sm);cursor:pointer;border:0.5px solid var(--border2);}
 #photo-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;align-items:center;justify-content:center;padding:20px;}
@@ -1967,7 +1967,6 @@ function renderMoveList(docs, tab, evalMap){
     const tracking=d.trackingNumber?`<div style="font-size:12px;color:var(--text2);margin-top:2px;"><i class="ti ti-barcode" style="vertical-align:-2px;margin-right:3px;"></i>${d.carrier||''} ${d.trackingNumber}</div>`:'';
     const qty=d.quantity?` ×${d.quantity}`:'';
     const arrivedBadge=d.arrived?'<span style="color:var(--green);font-size:11px;font-weight:600;margin-left:6px;">✅到着済</span>':'<span style="color:var(--orange);font-size:11px;font-weight:600;margin-left:6px;">🚚輸送中</span>';
-    // コア番号に紐づく評価写真
     const evPhotos=evalMap[d.coreNumber]||[];
     const photoHtml=evPhotos.length>0?`<div class="hist-photos">${evPhotos.map(u=>`<img src="${u}" onclick="openPhoto('${u}')" alt="評価写真">`).join('')}</div>`:'';
     return `<div class="hist-item">
@@ -2059,24 +2058,51 @@ function toggleFlag(btn){btn.classList.toggle('active');}
 const CLOUDINARY_CLOUD='dy64xqtcg';
 const CLOUDINARY_PRESET='sarkland-quality';
 
-// photos: {url, uploading, localSrc} の配列
+// 画像を圧縮・縮小する（長辺1280px・JPEG品質0.8）
+function compressImage(file){
+  return new Promise((resolve)=>{
+    const reader=new FileReader();
+    reader.onload=function(ev){
+      const img=new Image();
+      img.onload=function(){
+        const maxSide=1280;
+        let w=img.width,h=img.height;
+        if(w>h){ if(w>maxSide){h=Math.round(h*maxSide/w);w=maxSide;} }
+        else   { if(h>maxSide){w=Math.round(w*maxSide/h);h=maxSide;} }
+        const canvas=document.createElement('canvas');
+        canvas.width=w;canvas.height=h;
+        const ctx=canvas.getContext('2d');
+        ctx.drawImage(img,0,0,w,h);
+        canvas.toBlob(function(blob){
+          resolve(blob||file);
+        },'image/jpeg',0.8);
+      };
+      img.onerror=function(){resolve(file);};
+      img.src=ev.target.result;
+    };
+    reader.onerror=function(){resolve(file);};
+    reader.readAsDataURL(file);
+  });
+}
+
+// photos: {url, uploading, localSrc, error} の配列
 let photos=[];
 async function handlePhoto(e){
   const file=e.target.files[0];if(!file)return;
   e.target.value='';
-  // ローカルプレビューを先に表示（アップロード中マーク付き）
+  const item={url:null,localSrc:null,uploading:true};
+  photos.push(item);renderPhotos();
+  // 圧縮してからプレビュー＆アップロード
+  const blob=await compressImage(file);
   const reader=new FileReader();
-  reader.onload=function(ev){
-    const item={url:null,localSrc:ev.target.result,uploading:true};
-    photos.push(item);renderPhotos();
-    uploadToCloudinary(file,item);
-  };
-  reader.readAsDataURL(file);
+  reader.onload=function(ev){item.localSrc=ev.target.result;renderPhotos();};
+  reader.readAsDataURL(blob);
+  uploadToCloudinary(blob,item);
 }
-async function uploadToCloudinary(file,item){
+async function uploadToCloudinary(blob,item){
   try{
     const fd=new FormData();
-    fd.append('file',file);
+    fd.append('file',blob);
     fd.append('upload_preset',CLOUDINARY_PRESET);
     const res=await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`,{method:'POST',body:fd});
     const data=await res.json();
@@ -2084,14 +2110,10 @@ async function uploadToCloudinary(file,item){
       item.url=data.secure_url;
       item.uploading=false;
       renderPhotos();
-    }else{
-      throw new Error('upload failed');
-    }
+    }else{ throw new Error('upload failed'); }
   }catch(err){
     console.error('Cloudinary upload error',err);
-    item.uploading=false;
-    item.error=true;
-    renderPhotos();
+    item.uploading=false;item.error=true;renderPhotos();
     showToast('写真のアップロードに失敗しました');
   }
 }
@@ -2100,7 +2122,7 @@ function renderPhotos(){
   if(!photos.length){grid.style.display='none';grid.innerHTML='';return;}
   grid.style.display='grid';
   grid.innerHTML=photos.map((p,i)=>{
-    const src=p.url||p.localSrc;
+    const src=p.url||p.localSrc||'';
     const overlay=p.uploading?'<div class="photo-uploading">アップロード中…</div>':(p.error?'<div class="photo-uploading" style="background:rgba(220,50,50,.7);">失敗</div>':'');
     return `<div class="photo-thumb"><img src="${src}" alt="写真${i+1}">${overlay}<button class="photo-remove" onclick="removePhoto(${i})"><i class="ti ti-x" style="font-size:13px;"></i></button></div>`;
   }).join('');
