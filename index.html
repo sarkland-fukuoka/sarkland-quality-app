@@ -93,6 +93,14 @@ textarea{min-height:72px;resize:none;}
 .photo-grid{display:none;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
 .photo-thumb{border-radius:var(--radius-sm);overflow:hidden;aspect-ratio:1;background:var(--bg3);position:relative;}
 .photo-thumb img{width:100%;height:100%;object-fit:cover;}
+.report-section{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:16px;}
+.report-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-size:15px;font-weight:700;}
+.csv-btn{padding:6px 12px;background:var(--green);color:#fff;border:none;border-radius:var(--radius-sm);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;}
+.report-table{width:100%;border-collapse:collapse;font-size:12px;}
+.report-table th{background:var(--bg3);color:var(--text2);font-weight:600;padding:7px 8px;text-align:left;border-bottom:0.5px solid var(--border);}
+.report-table td{padding:7px 8px;border-bottom:0.5px solid var(--border2);}
+.report-table tr:last-child td{border-bottom:none;}
+.report-table td.num{text-align:right;font-variant-numeric:tabular-nums;}
 .photo-uploading{position:absolute;inset:0;background:rgba(0,0,0,.55);color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center;border-radius:var(--radius);}
 .hist-photos{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;}
 .hist-photos img{width:64px;height:64px;object-fit:cover;border-radius:var(--radius-sm);cursor:pointer;border:0.5px solid var(--border2);}
@@ -336,6 +344,12 @@ textarea{min-height:72px;resize:none;}
             <span style="font-size:12px;font-weight:600;color:var(--purple-dark);">評価履歴</span>
           </button>
 
+          <button onclick="switchPage('report',document.getElementById('nav-report'),'集計レポート','報告用データの抽出');loadReport()"
+            style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 8px;background:#E6F1FB;border:none;border-radius:var(--radius);cursor:pointer;-webkit-tap-highlight-color:transparent;font-family:inherit;">
+            <i class="ti ti-chart-bar" style="font-size:28px;color:#185FA5;" aria-hidden="true"></i>
+            <span style="font-size:12px;font-weight:600;color:#0C447C;">集計レポート</span>
+          </button>
+
           <button onclick="switchPage('board',document.getElementById('nav-board'),'商品マッチング','欲しい商品をリクエスト');loadBoard()"
             style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 8px;background:#EAF3DE;border:none;border-radius:var(--radius);cursor:pointer;-webkit-tap-highlight-color:transparent;font-family:inherit;grid-column:span 3;">
             <i class="ti ti-layout-board" style="font-size:28px;color:#3B6D11;" aria-hidden="true"></i>
@@ -507,6 +521,39 @@ textarea{min-height:72px;resize:none;}
         <i class="ti ti-bulb" style="vertical-align:-2px;margin-right:4px;"></i>付属品管理のナレッジ追加を推奨しています
       </div>
       <div id="knowledge-list"><div class="loading">読み込み中...</div></div>
+    </div>
+
+    <!-- 集計レポート -->
+    <div class="page" id="pg-report">
+      <div style="display:flex;gap:8px;margin-bottom:14px;">
+        <button onclick="exportReportPDF()" style="flex:1;padding:11px;background:var(--red);color:#fff;border:none;border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;"><i class="ti ti-file-type-pdf" style="vertical-align:-2px;margin-right:4px;"></i>PDFで保存</button>
+      </div>
+      <div id="report-content">
+        <!-- 月別移動数 -->
+        <div class="report-section">
+          <div class="report-head">
+            <span><i class="ti ti-truck-delivery" style="vertical-align:-2px;margin-right:5px;color:#185FA5;"></i>月別 移動数</span>
+            <button class="csv-btn" onclick="exportCSV('move')"><i class="ti ti-download"></i> CSV</button>
+          </div>
+          <div id="report-move"><div class="loading">読み込み中...</div></div>
+        </div>
+        <!-- 営業所別スコア -->
+        <div class="report-section">
+          <div class="report-head">
+            <span><i class="ti ti-medal" style="vertical-align:-2px;margin-right:5px;color:var(--purple);"></i>営業所別 スコア</span>
+            <button class="csv-btn" onclick="exportCSV('score')"><i class="ti ti-download"></i> CSV</button>
+          </div>
+          <div id="report-score"><div class="loading">読み込み中...</div></div>
+        </div>
+        <!-- 評価一覧 -->
+        <div class="report-section">
+          <div class="report-head">
+            <span><i class="ti ti-star" style="vertical-align:-2px;margin-right:5px;color:var(--orange);"></i>評価一覧</span>
+            <button class="csv-btn" onclick="exportCSV('eval')"><i class="ti ti-download"></i> CSV</button>
+          </div>
+          <div id="report-eval"><div class="loading">読み込み中...</div></div>
+        </div>
+      </div>
     </div>
 
     <!-- 出庫登録 -->
@@ -733,6 +780,7 @@ textarea{min-height:72px;resize:none;}
     <button class="nav-btn" id="nav-notif" style="display:none;position:relative;"><div class="nav-dot" id="nav-notif-dot"></div></button>
     <button class="nav-btn" id="nav-move" style="display:none;"></button>
     <button class="nav-btn" id="nav-hist" style="display:none;"></button>
+    <button class="nav-btn" id="nav-report" style="display:none;"></button>
     <button class="nav-btn" id="nav-rank" style="display:none;"></button>
     <button class="nav-btn" id="nav-knowledge" style="display:none;"></button>
     <button class="nav-btn" id="nav-board" style="display:none;"></button>
@@ -2060,6 +2108,175 @@ function openPhoto(url){
   }
   document.getElementById('photo-modal-img').src=url;
   m.style.display='flex';
+}
+
+// ===== 集計レポート =====
+let reportData={move:[],score:[],eval:[]};
+
+async function loadReport(){
+  document.getElementById('report-move').innerHTML='<div class="loading">読み込み中...</div>';
+  document.getElementById('report-score').innerHTML='<div class="loading">読み込み中...</div>';
+  document.getElementById('report-eval').innerHTML='<div class="loading">読み込み中...</div>';
+  await Promise.all([loadReportMove(),loadReportScore(),loadReportEval()]);
+}
+
+function ymKey(d){
+  if(!d||!d.toDate) return '不明';
+  const dt=d.toDate();
+  return dt.getFullYear()+'年'+(dt.getMonth()+1)+'月';
+}
+
+// 月別移動数
+async function loadReportMove(){
+  try{
+    const snap=await window.fsGetDocs(window.fsQuery(
+      window.fsCollection(window.db,'shipments'),
+      window.fsOrderBy('createdAt','desc'),
+      window.fsLimit(1000)
+    ));
+    const map={};
+    snap.docs.forEach(doc=>{
+      const s=doc.data();
+      const key=ymKey(s.createdAt);
+      if(!map[key]) map[key]={count:0,qty:0};
+      map[key].count++;
+      map[key].qty+=Number(s.quantity)||0;
+    });
+    const rows=Object.keys(map).map(k=>({month:k,count:map[k].count,qty:map[k].qty}));
+    reportData.move=rows;
+    const el=document.getElementById('report-move');
+    if(rows.length===0){el.innerHTML='<div class="loading">データがありません</div>';return;}
+    el.innerHTML='<table class="report-table"><thead><tr><th>年月</th><th class="num">移動件数</th><th class="num">総数量</th></tr></thead><tbody>'+
+      rows.map(r=>`<tr><td>${r.month}</td><td class="num">${r.count}件</td><td class="num">${r.qty}</td></tr>`).join('')+
+      '</tbody></table>';
+  }catch(e){document.getElementById('report-move').innerHTML='<div class="loading">読み込みエラー</div>';console.error(e);}
+}
+
+// 営業所別スコア（受取側からの評価＝送り元営業所ごとの平均）
+async function loadReportScore(){
+  try{
+    const snap=await window.fsGetDocs(window.fsQuery(
+      window.fsCollection(window.db,'evaluations'),
+      window.fsOrderBy('createdAt','desc'),
+      window.fsLimit(1000)
+    ));
+    const map={};let totalSum=0,totalCnt=0;
+    snap.docs.forEach(doc=>{
+      const e=doc.data();
+      const off=e.fromOffice||'不明';
+      if(!map[off]) map[off]={sum:0,cnt:0,clean:0,looks:0,parts:0,pack:0};
+      map[off].sum+=Number(e.totalScore)||0;map[off].cnt++;
+      if(e.scores){map[off].clean+=Number(e.scores.clean)||0;map[off].looks+=Number(e.scores.looks)||0;map[off].parts+=Number(e.scores.parts)||0;map[off].pack+=Number(e.scores.pack)||0;}
+      totalSum+=Number(e.totalScore)||0;totalCnt++;
+    });
+    const avgAll=totalCnt>0?totalSum/totalCnt:0;
+    const K=5; // ベイズ補正の最低件数
+    const rows=Object.keys(map).map(off=>{
+      const m=map[off];
+      const real=m.cnt>0?m.sum/m.cnt:0;
+      const bayes=(m.cnt*real+K*avgAll)/(m.cnt+K);
+      return {office:off,cnt:m.cnt,real:real,bayes:bayes,
+        clean:m.cnt>0?m.clean/m.cnt:0,looks:m.cnt>0?m.looks/m.cnt:0,parts:m.cnt>0?m.parts/m.cnt:0,pack:m.cnt>0?m.pack/m.cnt:0};
+    }).sort((a,b)=>b.bayes-a.bayes);
+    reportData.score=rows;
+    const el=document.getElementById('report-score');
+    if(rows.length===0){el.innerHTML='<div class="loading">データがありません</div>';return;}
+    el.innerHTML='<table class="report-table"><thead><tr><th>営業所</th><th class="num">件数</th><th class="num">補正</th><th class="num">実</th></tr></thead><tbody>'+
+      rows.map((r,i)=>`<tr><td>${i+1}. ${r.office}</td><td class="num">${r.cnt}</td><td class="num">${r.bayes.toFixed(2)}</td><td class="num">${r.real.toFixed(2)}</td></tr>`).join('')+
+      '</tbody></table><div style="font-size:11px;color:var(--text2);margin-top:6px;">補正＝件数を考慮したベイズ平均 / 実＝実際の平均</div>';
+  }catch(e){document.getElementById('report-score').innerHTML='<div class="loading">読み込みエラー</div>';console.error(e);}
+}
+
+// 評価一覧
+async function loadReportEval(){
+  try{
+    const snap=await window.fsGetDocs(window.fsQuery(
+      window.fsCollection(window.db,'evaluations'),
+      window.fsOrderBy('createdAt','desc'),
+      window.fsLimit(500)
+    ));
+    const rows=snap.docs.map(doc=>{
+      const e=doc.data();
+      const dt=e.createdAt&&e.createdAt.toDate?e.createdAt.toDate().toLocaleDateString('ja-JP'):'';
+      return {date:dt,from:e.fromOffice||'',to:e.toOffice||'',item:e.itemName||'',cat:e.category||'',
+        score:Number(e.totalScore)||0,
+        clean:e.scores?e.scores.clean:'',looks:e.scores?e.scores.looks:'',parts:e.scores?e.scores.parts:'',pack:e.scores?e.scores.pack:'',
+        flags:(e.flags||[]).join('・'),comment:e.comment||'',evaluator:e.evaluator||''};
+    });
+    reportData.eval=rows;
+    const el=document.getElementById('report-eval');
+    if(rows.length===0){el.innerHTML='<div class="loading">データがありません</div>';return;}
+    const shown=rows.slice(0,30);
+    el.innerHTML='<table class="report-table"><thead><tr><th>日付</th><th>商品</th><th>送り元→受取</th><th class="num">点</th></tr></thead><tbody>'+
+      shown.map(r=>`<tr><td>${r.date}</td><td>${r.item}</td><td style="font-size:11px;">${r.from}→${r.to}</td><td class="num">${r.score.toFixed(1)}</td></tr>`).join('')+
+      '</tbody></table>'+(rows.length>30?`<div style="font-size:11px;color:var(--text2);margin-top:6px;">表示は最新30件。CSVには全${rows.length}件が含まれます。</div>`:'');
+  }catch(e){document.getElementById('report-eval').innerHTML='<div class="loading">読み込みエラー</div>';console.error(e);}
+}
+
+// CSV出力（Excelで文字化けしないようBOM付きUTF-8）
+function toCSV(headers,rows){
+  const esc=v=>{v=(v===null||v===undefined)?'':String(v);return '"'+v.replace(/"/g,'""')+'"';};
+  let csv=headers.map(esc).join(',')+'\r\n';
+  csv+=rows.map(r=>r.map(esc).join(',')).join('\r\n');
+  return '\uFEFF'+csv;
+}
+function downloadCSV(filename,csv){
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=filename;
+  document.body.appendChild(a);a.click();
+  document.body.removeChild(a);URL.revokeObjectURL(url);
+}
+function todayStr(){const d=new Date();return d.getFullYear()+('0'+(d.getMonth()+1)).slice(-2)+('0'+d.getDate()).slice(-2);}
+
+function exportCSV(type){
+  if(type==='move'){
+    if(!reportData.move.length){showToast('データがありません');return;}
+    const rows=reportData.move.map(r=>[r.month,r.count,r.qty]);
+    downloadCSV('月別移動数_'+todayStr()+'.csv',toCSV(['年月','移動件数','総数量'],rows));
+  }else if(type==='score'){
+    if(!reportData.score.length){showToast('データがありません');return;}
+    const rows=reportData.score.map((r,i)=>[i+1,r.office,r.cnt,r.bayes.toFixed(2),r.real.toFixed(2),r.clean.toFixed(2),r.looks.toFixed(2),r.parts.toFixed(2),r.pack.toFixed(2)]);
+    downloadCSV('営業所別スコア_'+todayStr()+'.csv',toCSV(['順位','営業所','件数','補正スコア','実スコア','清潔感','外観','付属品','梱包'],rows));
+  }else if(type==='eval'){
+    if(!reportData.eval.length){showToast('データがありません');return;}
+    const rows=reportData.eval.map(r=>[r.date,r.from,r.to,r.item,r.cat,r.score.toFixed(2),r.clean,r.looks,r.parts,r.pack,r.flags,r.comment,r.evaluator]);
+    downloadCSV('評価一覧_'+todayStr()+'.csv',toCSV(['日付','送り元','受取','商品名','カテゴリ','総合スコア','清潔感','外観','付属品','梱包','フラグ','コメント','評価者'],rows));
+  }
+  showToast('CSVをダウンロードしました');
+}
+
+// PDF出力（印刷ダイアログ経由でPDF保存）
+function exportReportPDF(){
+  const now=new Date().toLocaleDateString('ja-JP');
+  const moveTable=document.getElementById('report-move').innerHTML;
+  const scoreTable=document.getElementById('report-score').innerHTML;
+  const evalTable=document.getElementById('report-eval').innerHTML;
+  const w=window.open('','_blank');
+  if(!w){showToast('ポップアップを許可してください');return;}
+  w.document.write(`<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>SARKLAND 品質管理レポート</title>
+  <style>
+  body{font-family:'Hiragino Sans','Yu Gothic',sans-serif;padding:24px;color:#222;}
+  h1{font-size:20px;border-bottom:2px solid #534AB7;padding-bottom:8px;}
+  h2{font-size:15px;margin-top:24px;color:#534AB7;}
+  .meta{font-size:12px;color:#666;margin-bottom:4px;}
+  table{width:100%;border-collapse:collapse;font-size:11px;margin-top:6px;}
+  th{background:#eee;padding:6px;text-align:left;border:0.5px solid #ccc;}
+  td{padding:6px;border:0.5px solid #ddd;}
+  .num{text-align:right;}
+  .loading{color:#999;font-size:12px;}
+  @media print{button{display:none;}}
+  </style></head><body>
+  <h1>SARKLAND 品質管理レポート</h1>
+  <div class="meta">作成日：${now}　作成者：${currentName}（${currentOffice}）</div>
+  <h2>月別 移動数</h2>${moveTable}
+  <h2>営業所別 スコア</h2>${scoreTable}
+  <h2>評価一覧（最新30件）</h2>${evalTable}
+  <p style="margin-top:24px;font-size:11px;color:#666;">※詳細な全件データは各CSVをご参照ください。</p>
+  </body></html>`);
+  w.document.close();
+  setTimeout(()=>{w.print();},400);
 }
 
 // 星評価
