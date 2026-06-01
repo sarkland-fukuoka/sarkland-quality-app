@@ -330,6 +330,12 @@ textarea{min-height:72px;resize:none;}
             <span style="font-size:12px;font-weight:600;color:var(--red);">ランキング</span>
           </button>
 
+          <button onclick="switchPage('hist',document.getElementById('nav-hist'),'評価履歴','受けた評価の記録');switchHistTab('mine')"
+            style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 8px;background:#EEEDFE;border:none;border-radius:var(--radius);cursor:pointer;-webkit-tap-highlight-color:transparent;font-family:inherit;">
+            <i class="ti ti-history" style="font-size:28px;color:var(--purple);" aria-hidden="true"></i>
+            <span style="font-size:12px;font-weight:600;color:var(--purple-dark);">評価履歴</span>
+          </button>
+
           <button onclick="switchPage('board',document.getElementById('nav-board'),'商品マッチング','欲しい商品をリクエスト');loadBoard()"
             style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 8px;background:#EAF3DE;border:none;border-radius:var(--radius);cursor:pointer;-webkit-tap-highlight-color:transparent;font-family:inherit;grid-column:span 3;">
             <i class="ti ti-layout-board" style="font-size:28px;color:#3B6D11;" aria-hidden="true"></i>
@@ -455,9 +461,16 @@ textarea{min-height:72px;resize:none;}
       <div id="notif-list"><div class="loading">読み込み中...</div></div>
     </div>
 
-    <!-- 履歴 -->
+    <!-- 評価履歴 -->
     <div class="page" id="pg-hist">
-      <div class="filter-row">
+      <div style="display:flex;gap:0;margin-bottom:12px;border:0.5px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;">
+        <button id="histtab-mine" onclick="switchHistTab('mine')" style="flex:1;padding:10px;background:var(--purple);color:#fff;border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">⭐ 自営業所への評価</button>
+        <button id="histtab-all" onclick="switchHistTab('all')" style="flex:1;padding:10px;background:var(--bg2);color:var(--text2);border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">🌐 全体の履歴</button>
+      </div>
+      <div id="hist-mine-note" style="font-size:12px;color:var(--text2);background:var(--purple-light);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:12px;">
+        <i class="ti ti-info-circle" style="vertical-align:-2px;margin-right:4px;"></i><span id="hist-mine-office"></span>が送り出した商品に対して、他営業所から受けた評価です。
+      </div>
+      <div class="filter-row" id="hist-all-filters" style="display:none;">
         <select id="hist-filter-office" onchange="loadHistory()">
           <option value="">全営業所</option>
           <option>札幌営業所</option><option>盛岡営業所</option><option>仙台営業所</option>
@@ -719,6 +732,7 @@ textarea{min-height:72px;resize:none;}
     <button class="nav-btn" id="nav-check" style="display:none;"></button>
     <button class="nav-btn" id="nav-notif" style="display:none;position:relative;"><div class="nav-dot" id="nav-notif-dot"></div></button>
     <button class="nav-btn" id="nav-move" style="display:none;"></button>
+    <button class="nav-btn" id="nav-hist" style="display:none;"></button>
     <button class="nav-btn" id="nav-rank" style="display:none;"></button>
     <button class="nav-btn" id="nav-knowledge" style="display:none;"></button>
     <button class="nav-btn" id="nav-board" style="display:none;"></button>
@@ -1176,21 +1190,50 @@ async function loadDashboard(){
 }
 
 // 履歴読み込み
+let currentHistTab='mine';
+function switchHistTab(tab){
+  currentHistTab=tab;
+  const mineBtn=document.getElementById('histtab-mine');
+  const allBtn=document.getElementById('histtab-all');
+  if(tab==='mine'){
+    mineBtn.style.background='var(--purple)';mineBtn.style.color='#fff';
+    allBtn.style.background='var(--bg2)';allBtn.style.color='var(--text2)';
+    document.getElementById('hist-mine-note').style.display='block';
+    document.getElementById('hist-all-filters').style.display='none';
+  }else{
+    allBtn.style.background='var(--purple)';allBtn.style.color='#fff';
+    mineBtn.style.background='var(--bg2)';mineBtn.style.color='var(--text2)';
+    document.getElementById('hist-mine-note').style.display='none';
+    document.getElementById('hist-all-filters').style.display='flex';
+  }
+  loadHistory();
+}
+
 async function loadHistory(){
   if(!window.db) return;
   const listEl=document.getElementById('hist-list');
   listEl.innerHTML='<div class="loading">読み込み中...</div>';
+  const mineOfficeEl=document.getElementById('hist-mine-office');
+  if(mineOfficeEl) mineOfficeEl.textContent=currentOffice;
   try{
     const q=window.fsQuery(window.fsCollection(window.db,'evaluations'),window.fsOrderBy('createdAt','desc'),window.fsLimit(50));
     const snap=await window.fsGetDocs(q);
     let docs=snap.docs.map(d=>({id:d.id,...d.data()}));
-    const offFilter=document.getElementById('hist-filter-office').value;
-    const scoreFilter=document.getElementById('hist-filter-score').value;
-    if(offFilter) docs=docs.filter(d=>d.fromOffice===offFilter||d.toOffice===offFilter);
-    if(scoreFilter==='low') docs=docs.filter(d=>d.totalScore<3);
-    else if(scoreFilter==='mid') docs=docs.filter(d=>d.totalScore>=3&&d.totalScore<4);
-    else if(scoreFilter==='high') docs=docs.filter(d=>d.totalScore>=4);
-    if(docs.length===0){listEl.innerHTML='<div class="loading">該当する評価がありません</div>';return;}
+    if(currentHistTab==='mine'){
+      // 自営業所が送り出した商品への評価（＝自分が評価された記録）
+      docs=docs.filter(d=>d.fromOffice===currentOffice);
+    }else{
+      const offFilter=document.getElementById('hist-filter-office').value;
+      const scoreFilter=document.getElementById('hist-filter-score').value;
+      if(offFilter) docs=docs.filter(d=>d.fromOffice===offFilter||d.toOffice===offFilter);
+      if(scoreFilter==='low') docs=docs.filter(d=>d.totalScore<3);
+      else if(scoreFilter==='mid') docs=docs.filter(d=>d.totalScore>=3&&d.totalScore<4);
+      else if(scoreFilter==='high') docs=docs.filter(d=>d.totalScore>=4);
+    }
+    if(docs.length===0){
+      const msg=currentHistTab==='mine'?'まだ自営業所への評価はありません':'該当する評価がありません';
+      listEl.innerHTML='<div class="loading">'+msg+'</div>';return;
+    }
     listEl.innerHTML=docs.map(d=>{
       const score=d.totalScore||0;
       const badgeClass=score>=4?'badge-good':score>=3?'badge-mid':'badge-bad';
@@ -1198,9 +1241,10 @@ async function loadHistory(){
       const flags=d.flags&&d.flags.length>0?`<span style="color:var(--red);margin-left:4px;">${d.flags.join('・')}</span>`:'';
       const date=d.createdAt&&d.createdAt.toDate?d.createdAt.toDate().toLocaleDateString('ja-JP'):'';
       const photoHtml=(d.photos&&d.photos.length>0)?`<div class="hist-photos">${d.photos.map(u=>`<img src="${u}" onclick="openPhoto('${u}')" alt="評価写真">`).join('')}</div>`:'';
-      return `<div class="hist-item"><div class="hist-top"><span class="hist-name">${d.itemName||'商品名なし'}</span><span class="badge ${badgeClass}">${stars}</span></div><div class="hist-meta">${d.fromOffice||''}→${d.toOffice||''} · ${d.category||''} · ${date} · ${d.evaluator||''}${flags}</div>${photoHtml}</div>`;
+      const comment=d.comment?`<div style="font-size:12px;color:var(--text);margin-top:4px;background:var(--bg3);border-radius:var(--radius-sm);padding:6px 10px;">${d.comment}</div>`:'';
+      return `<div class="hist-item"><div class="hist-top"><span class="hist-name">${d.itemName||'商品名なし'}</span><span class="badge ${badgeClass}">${stars}</span></div><div class="hist-meta">${d.fromOffice||''}→${d.toOffice||''} · ${d.category||''} · ${date} · 評価者：${d.evaluator||''}${flags}</div>${comment}${photoHtml}</div>`;
     }).join('');
-  }catch(e){listEl.innerHTML='<div class="loading">読み込みエラー</div>';}
+  }catch(e){listEl.innerHTML='<div class="loading">読み込みエラー</div>';console.error(e);}
 }
 
 // 通知読み込み
