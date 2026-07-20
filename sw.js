@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sarkland-v3';
+const CACHE_NAME = 'sarkland-v5';
 const urlsToCache = [
   '/sarkland-quality-app/',
   '/sarkland-quality-app/index.html',

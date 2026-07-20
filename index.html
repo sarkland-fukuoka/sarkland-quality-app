@@ -155,6 +155,112 @@ textarea{min-height:72px;resize:none;}
 .filter-row select{flex:1;}
 .toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;z-index:999;display:none;white-space:nowrap;}
 .loading{text-align:center;padding:20px;color:var(--text2);font-size:14px;}
+
+/* 現場検品型UI v4 */
+:root{--ink:#2b251f;--sand:#f6f1e9;--sand2:#fffaf3;--brand:#2e261f;--accent:#d97706;--ok:#157347;--warn2:#b45309;--ng:#b42318;}
+#pg-check{padding-bottom:18px;}
+.inspection-hero{background:linear-gradient(145deg,#2f2822,#181512);color:#fff;border-radius:18px;padding:18px;margin-bottom:14px;position:relative;overflow:hidden;}
+.inspection-hero:after{content:'';position:absolute;width:140px;height:140px;border:24px solid rgba(255,255,255,.06);border-radius:50%;right:-58px;top:-58px;}
+.inspection-kicker{font-size:11px;letter-spacing:.12em;opacity:.72;font-weight:700;}
+.inspection-title{font-size:22px;font-weight:800;margin-top:5px;line-height:1.3;}
+.inspection-copy{font-size:12px;line-height:1.6;opacity:.78;margin-top:7px;max-width:280px;}
+.stepper{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:0 0 14px;}
+.step-chip{background:#e8e1d8;color:#766b61;border:none;border-radius:999px;padding:8px 3px;font:700 10px inherit;cursor:pointer;}
+.step-chip.active{background:var(--brand);color:#fff;}
+.inspection-panel{background:var(--sand2);border:1px solid #ddd2c5;border-radius:16px;padding:15px;margin-bottom:12px;box-shadow:0 8px 24px rgba(56,44,31,.05);}
+.inspection-panel-head{display:flex;gap:11px;align-items:center;margin-bottom:13px;}
+.step-no{width:34px;height:34px;display:flex;align-items:center;justify-content:center;border-radius:10px;background:var(--brand);color:#fff;font-weight:800;flex-shrink:0;}
+.inspection-panel-title{font-size:16px;font-weight:800;}
+.inspection-panel-sub{font-size:11px;color:#766b61;margin-top:2px;}
+#pg-check .card{background:transparent;border:none;padding:0;margin:0;}
+#pg-check .field-label{color:#685e55;font-weight:700;}
+#pg-check select,#pg-check input,#pg-check textarea{background:#fff;border:1px solid #d8ccbf;min-height:46px;}
+.photo-command{background:#fff;border:2px dashed #a69687;border-radius:14px;padding:22px 12px;text-align:center;cursor:pointer;}
+.photo-command i{font-size:36px;color:var(--accent);display:block;margin-bottom:6px;}
+.photo-command strong{display:block;font-size:15px;}
+.photo-command small{color:#766b61;font-size:11px;}
+.photo-guide{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:10px;}
+.photo-guide span{background:#eee6dc;border-radius:8px;padding:7px 2px;text-align:center;font-size:10px;color:#675b50;}
+#pg-check .eval-item{background:#fff;border:1px solid #ddd2c5;border-radius:13px;padding:13px;margin-bottom:9px;}
+#pg-check .eval-item:last-child{margin-bottom:0;padding-bottom:13px;}
+#pg-check .eval-item:first-child{padding-top:13px;}
+#pg-check .star-row{justify-content:space-between;gap:2px;}
+#pg-check .star{font-size:34px;}
+#pg-check .flags{grid-template-columns:1fr 1fr;}
+#pg-check .flag-btn{min-height:52px;background:#fff;border:1px solid #d8ccbf;justify-content:center;}
+.decision-grid{display:grid;gap:9px;}
+.decision-btn{width:100%;border:2px solid transparent;border-radius:14px;padding:15px 12px;display:flex;align-items:center;gap:12px;text-align:left;background:#fff;font-family:inherit;cursor:pointer;}
+.decision-btn i{font-size:28px;}
+.decision-btn strong{display:block;font-size:15px;}
+.decision-btn small{display:block;font-size:11px;margin-top:2px;opacity:.75;}
+.decision-btn[data-decision="出荷可能"]{color:var(--ok);border-color:#b8dcc8;}
+.decision-btn[data-decision="要メンテナンス"]{color:var(--warn2);border-color:#f2d2a7;}
+.decision-btn[data-decision="出荷不可"]{color:var(--ng);border-color:#efc0bc;}
+.decision-btn.active{color:#fff;box-shadow:0 8px 18px rgba(0,0,0,.13);}
+.decision-btn[data-decision="出荷可能"].active{background:var(--ok);border-color:var(--ok);}
+.decision-btn[data-decision="要メンテナンス"].active{background:var(--warn2);border-color:var(--warn2);}
+.decision-btn[data-decision="出荷不可"].active{background:var(--ng);border-color:var(--ng);}
+.inspection-submit{background:var(--brand);border-radius:14px;box-shadow:0 8px 20px rgba(43,37,31,.18);}
+.inspection-note{font-size:11px;color:#766b61;text-align:center;margin-top:8px;}
+
+
+
+/* Home redesign v5 — operations cockpit */
+#pg-home{margin:-12px -16px 0;padding:0 0 24px;background:#f2f0eb;min-height:calc(100vh - 120px);}
+.home-hero{position:relative;overflow:hidden;background:linear-gradient(145deg,#181612 0%,#2b261f 56%,#3e3429 100%);color:#fff;padding:24px 20px 22px;border-radius:0 0 28px 28px;box-shadow:0 18px 35px rgba(42,34,25,.18);}
+.home-hero:before{content:"";position:absolute;width:220px;height:220px;border-radius:50%;right:-95px;top:-110px;background:radial-gradient(circle,rgba(225,151,64,.35),rgba(225,151,64,0) 68%);}
+.home-hero:after{content:"";position:absolute;width:150px;height:150px;border:1px solid rgba(255,255,255,.1);border-radius:50%;right:-30px;bottom:-85px;}
+.home-hero-top{position:relative;z-index:1;display:flex;justify-content:space-between;align-items:flex-start;gap:16px;}
+.home-eyebrow{font-size:11px;letter-spacing:1.8px;color:#d9c5ae;font-weight:700;text-transform:uppercase;margin-bottom:8px;}
+.home-greeting{font-size:23px;font-weight:750;letter-spacing:-.5px;line-height:1.25;}
+.home-office{font-size:12px;color:#c6b9aa;margin-top:6px;}
+.home-logo-mark{width:52px;height:52px;border-radius:17px;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);}
+.home-logo-mark i{font-size:27px;color:#f1b15f;}
+.home-focus{position:relative;z-index:1;margin-top:22px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:14px;display:flex;align-items:center;gap:13px;cursor:pointer;backdrop-filter:blur(10px);}
+.home-focus-icon{width:43px;height:43px;border-radius:14px;background:#f1b15f;color:#1f1b16;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.home-focus-icon i{font-size:23px;}
+.home-focus-copy{flex:1;min-width:0;}
+.home-focus-label{font-size:10px;letter-spacing:1.2px;color:#d9c5ae;font-weight:700;margin-bottom:3px;}
+.home-focus-title{font-size:15px;font-weight:700;}
+.home-focus-sub{font-size:11px;color:#c8baaa;margin-top:3px;}
+.home-focus-arrow{font-size:21px;color:#f1b15f;}
+.home-body{padding:18px 16px 0;}
+.home-section-head{display:flex;align-items:end;justify-content:space-between;margin:4px 2px 10px;}
+.home-section-title{font-size:15px;font-weight:750;color:#29241e;letter-spacing:-.2px;}
+.home-section-note{font-size:10px;color:#8a8177;}
+.home-actions{display:grid;grid-template-columns:1.15fr .85fr;grid-template-rows:118px 96px;gap:10px;}
+.home-action{border:none;border-radius:21px;padding:15px;text-align:left;cursor:pointer;font-family:inherit;position:relative;overflow:hidden;box-shadow:0 8px 20px rgba(43,35,27,.08);-webkit-tap-highlight-color:transparent;}
+.home-action:active{transform:scale(.985);}
+.home-action.primary{grid-row:span 2;background:linear-gradient(155deg,#e7a146,#c97626);color:#fff;}
+.home-action.dark{background:#25221e;color:#fff;}
+.home-action.light{background:#fff;color:#29241e;border:1px solid #e7e1d9;}
+.home-action .action-icon{width:42px;height:42px;border-radius:14px;display:flex;align-items:center;justify-content:center;margin-bottom:18px;background:rgba(255,255,255,.18);}
+.home-action.light .action-icon{background:#eee8df;color:#8b5a25;}
+.home-action.dark .action-icon{background:rgba(255,255,255,.1);color:#f1b15f;}
+.home-action i{font-size:24px;}
+.home-action-title{font-size:16px;font-weight:760;line-height:1.2;}
+.home-action-sub{font-size:11px;line-height:1.45;margin-top:5px;opacity:.78;}
+.home-action .action-arrow{position:absolute;right:14px;bottom:13px;font-size:20px;opacity:.8;}
+.home-action.primary:after{content:"";position:absolute;width:110px;height:110px;border-radius:50%;background:rgba(255,255,255,.13);right:-45px;top:-35px;}
+.home-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:18px;}
+.home-kpi{background:#fff;border:1px solid #e7e1d9;border-radius:17px;padding:13px 10px;min-height:83px;box-shadow:0 5px 15px rgba(43,35,27,.05);cursor:pointer;}
+.home-kpi-value{font-size:23px;font-weight:780;color:#29241e;line-height:1;}
+.home-kpi-value.good{color:#16745b;}.home-kpi-value.warn{color:#b05f1d;}
+.home-kpi-label{font-size:10px;line-height:1.3;color:#81786e;margin-top:7px;}
+.home-pending{display:none;margin-top:16px;background:#30241d;color:#fff;border-radius:19px;padding:14px 15px;cursor:pointer;box-shadow:0 8px 18px rgba(48,36,29,.14);}
+.home-pending-row{display:flex;align-items:center;gap:12px;}
+.home-pending-icon{width:42px;height:42px;border-radius:14px;background:#d86844;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.home-pending-icon i{font-size:23px;}
+.home-pending-title{font-size:14px;font-weight:730;}.home-pending-sub{font-size:11px;color:#d9ccc3;margin-top:3px;}
+.home-recent-wrap{margin-top:18px;background:#fff;border:1px solid #e7e1d9;border-radius:21px;padding:14px;box-shadow:0 6px 18px rgba(43,35,27,.05);}
+.home-recent-wrap #recent-evals .hist-item,.home-recent-wrap #recent-evals .rank-item{border:none;border-top:1px solid #eee9e2;border-radius:0;margin:0;padding:12px 2px;background:transparent;}
+.home-recent-wrap #recent-evals > :first-child{border-top:none;}
+.home-tools{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px;}
+.home-tool{border:none;background:transparent;padding:7px 2px;display:flex;flex-direction:column;align-items:center;gap:6px;font-family:inherit;color:#5e554d;cursor:pointer;font-size:10px;}
+.home-tool-icon{width:45px;height:45px;border-radius:15px;background:#e6e0d8;display:flex;align-items:center;justify-content:center;color:#5f5144;position:relative;}
+.home-tool-icon i{font-size:22px;}.home-tool-icon.blue{background:#dde8ef;color:#315c78}.home-tool-icon.green{background:#dfe9df;color:#38613b}.home-tool-icon.rose{background:#efdfdc;color:#88473c}.home-tool-icon.gold{background:#f1e5d4;color:#925f22}
+.home-mini-dot{width:8px;height:8px;background:#d84e42;border-radius:50%;position:absolute;right:4px;top:3px;display:none;border:2px solid #f2f0eb;box-sizing:content-box;}
+
 </style>
 </head>
 <body>
@@ -293,106 +399,104 @@ textarea{min-height:72px;resize:none;}
 
   <div class="content">
 
-    <!-- ダッシュボード -->
+    <!-- ホーム：オペレーションコックピット -->
     <div class="page active" id="pg-home">
-      <div style="font-size:14px;margin-bottom:12px;">
-        <span id="disp-office" style="color:var(--text2);"></span>　<span id="disp-name" style="font-weight:600;"></span>さん、お疲れ様です
-      </div>
-
-      <!-- 未評価アラート -->
-      <div id="pending-alert" style="display:none;background:var(--red-light);border:1px solid var(--red);border-radius:var(--radius);padding:12px 14px;margin-bottom:12px;cursor:pointer;"
-        onclick="switchPage('check',document.getElementById('nav-check'),'品質評価','商品の状態を評価する');loadPendingEvals()">
-        <div style="display:flex;align-items:center;gap:8px;">
-          <i class="ti ti-alert-circle" style="font-size:22px;color:var(--red);flex-shrink:0;" aria-hidden="true"></i>
+      <section class="home-hero">
+        <div class="home-hero-top">
           <div>
-            <div style="font-size:14px;font-weight:600;color:var(--red);">未評価の商品が <span id="pending-count">0</span> 件あります</div>
-            <div style="font-size:12px;color:var(--red);margin-top:2px;">タップして品質評価を行ってください →</div>
+            <div class="home-eyebrow">SARKLAND OPERATIONS</div>
+            <div class="home-greeting"><span id="disp-name"></span>さん、<br>今日も安全に。</div>
+            <div class="home-office" id="disp-office"></div>
+          </div>
+          <div class="home-logo-mark"><i class="ti ti-truck-delivery"></i></div>
+        </div>
+        <div class="home-focus" onclick="switchPage('check',document.getElementById('nav-check'),'品質評価','商品の状態を評価する');loadPendingEvals()">
+          <div class="home-focus-icon"><i class="ti ti-scan"></i></div>
+          <div class="home-focus-copy">
+            <div class="home-focus-label">QUICK START</div>
+            <div class="home-focus-title">商品を検品する</div>
+            <div class="home-focus-sub">写真撮影から最終判定まで、順番に進めます</div>
+          </div>
+          <i class="ti ti-arrow-up-right home-focus-arrow"></i>
+        </div>
+      </section>
+
+      <div class="home-body">
+        <div class="home-section-head">
+          <div class="home-section-title">今日の業務</div>
+          <div class="home-section-note">よく使う操作</div>
+        </div>
+        <div class="home-actions">
+          <button class="home-action primary" onclick="switchPage('ship',document.getElementById('nav-ship'),'出庫登録','商品を送り出すとき')">
+            <div class="action-icon"><i class="ti ti-truck-loading"></i></div>
+            <div class="home-action-title">出庫を<br>登録する</div>
+            <div class="home-action-sub">商品・配送先・送り状をまとめて登録</div>
+            <i class="ti ti-arrow-right action-arrow"></i>
+          </button>
+          <button class="home-action dark" onclick="switchPage('arrive',document.getElementById('nav-arrive'),'到着確認','届いた商品の受け取り');loadArrivingList()">
+            <div class="action-icon"><i class="ti ti-package-import"></i></div>
+            <div class="home-action-title">到着確認</div>
+            <div class="home-action-sub">届いた商品を受け取る</div>
+            <i class="ti ti-arrow-up-right action-arrow"></i>
+          </button>
+          <button class="home-action light" onclick="switchPage('move',document.getElementById('nav-move'),'移動履歴','商品の移動記録');loadMove('all')">
+            <div class="action-icon"><i class="ti ti-route"></i></div>
+            <div class="home-action-title">移動履歴</div>
+            <div class="home-action-sub">コア番号から追跡</div>
+            <i class="ti ti-arrow-up-right action-arrow"></i>
+          </button>
+        </div>
+
+        <div id="pending-alert" class="home-pending" onclick="switchPage('check',document.getElementById('nav-check'),'品質評価','商品の状態を評価する');loadPendingEvals()">
+          <div class="home-pending-row">
+            <div class="home-pending-icon"><i class="ti ti-alert-triangle"></i></div>
+            <div style="flex:1;">
+              <div class="home-pending-title">未評価の商品が <span id="pending-count">0</span> 件あります</div>
+              <div class="home-pending-sub">品質評価を完了してください</div>
+            </div>
+            <i class="ti ti-chevron-right"></i>
           </div>
         </div>
-      </div>
 
-      <div class="metric-grid">
-        <div class="metric" onclick="switchPage('monthly',document.getElementById('nav-monthly'),'月次レポート','今月の評価詳細');loadMonthlyReport()" style="cursor:pointer;border:0.5px solid var(--purple);position:relative;">
-          <div style="position:absolute;top:6px;right:8px;font-size:10px;color:var(--purple);">詳細 ›</div>
-          <div class="metric-val" id="stat-count">-</div>
-          <div class="metric-lbl">今月の評価件数</div>
+        <div class="home-section-head" style="margin-top:20px;">
+          <div class="home-section-title">品質サマリー</div>
+          <div class="home-section-note">今月</div>
         </div>
-        <div class="metric" onclick="switchPage('officescore',document.getElementById('nav-officescore'),'営業所別スコア','全社の評価点一覧');loadOfficeScore()" style="cursor:pointer;border:0.5px solid var(--green);position:relative;">
-          <div style="position:absolute;top:6px;right:8px;font-size:10px;color:var(--green);">詳細 ›</div>
-          <div class="metric-val good" id="stat-avg">-</div>
-          <div class="metric-lbl">全社平均スコア</div>
+        <div class="home-kpis">
+          <div class="home-kpi" onclick="switchPage('monthly',document.getElementById('nav-monthly'),'月次レポート','今月の評価詳細');loadMonthlyReport()">
+            <div class="home-kpi-value" id="stat-count">-</div>
+            <div class="home-kpi-label">評価件数</div>
+          </div>
+          <div class="home-kpi" onclick="switchPage('officescore',document.getElementById('nav-officescore'),'営業所別スコア','全社の評価点一覧');loadOfficeScore()">
+            <div class="home-kpi-value good" id="stat-avg">-</div>
+            <div class="home-kpi-label">全社平均</div>
+          </div>
+          <div class="home-kpi">
+            <div class="home-kpi-value warn" id="stat-flags">-</div>
+            <div class="home-kpi-label">要改善</div>
+          </div>
         </div>
-        <div class="metric"><div class="metric-val warn" id="stat-flags">-</div><div class="metric-lbl">要改善フラグ</div></div>
-        <div class="metric"><div class="metric-val">25/25</div><div class="metric-lbl">参加拠点</div></div>
-      </div>
-      <div style="font-size:13px;font-weight:600;color:var(--text2);margin:4px 0 8px;">⚠ 要注意の営業所</div>
-      <div id="recent-evals"><div class="loading">読み込み中...</div></div>
 
-      <!-- アイコンメニュー -->
-      <div style="margin-top:16px;border-top:0.5px solid var(--border2);padding-top:14px;">
-        <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:10px;">メニュー</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+        <div class="home-section-head" style="margin-top:20px;">
+          <div class="home-section-title">その他の機能</div>
+        </div>
+        <div class="home-tools">
+          <button class="home-tool" onclick="switchPage('notif',document.getElementById('nav-notif'),'通知','評価結果の受信ボックス');clearNotif();loadNotifications()"><span class="home-tool-icon rose"><i class="ti ti-bell"></i><span id="menu-notif-dot" class="home-mini-dot"></span></span><span>通知</span></button>
+          <button class="home-tool" onclick="switchPage('hist',document.getElementById('nav-hist'),'評価履歴','受けた評価の記録');switchHistTab('mine')"><span class="home-tool-icon gold"><i class="ti ti-history"></i></span><span>評価履歴</span></button>
+          <button class="home-tool" onclick="switchPage('rank',document.getElementById('nav-rank'),'ランキング','営業所別スコア');loadRanking()"><span class="home-tool-icon green"><i class="ti ti-medal"></i></span><span>ランキング</span></button>
+          <button class="home-tool" onclick="switchPage('report',document.getElementById('nav-report'),'集計レポート','報告用データの抽出');loadReport()"><span class="home-tool-icon blue"><i class="ti ti-chart-bar"></i></span><span>レポート</span></button>
+          <button class="home-tool" onclick="switchPage('board',document.getElementById('nav-board'),'商品マッチング','欲しい商品をリクエスト');loadBoard()"><span class="home-tool-icon green"><i class="ti ti-layout-board"></i></span><span>マッチング</span></button>
+          <button class="home-tool" onclick="switchPage('knowledge',document.getElementById('nav-knowledge'),'ナレッジ','品質改善の共有');loadKnowledge()"><span class="home-tool-icon gold"><i class="ti ti-bulb"></i></span><span>ナレッジ</span></button>
+          <button class="home-tool" onclick="switchPage('passwd',document.getElementById('nav-passwd'),'パスワード変更','営業所パスワードの変更');document.getElementById('passwd-office-name').textContent=currentOffice;"><span class="home-tool-icon"><i class="ti ti-lock"></i></span><span>設定</span></button>
+          <button class="home-tool" onclick="doLogout()"><span class="home-tool-icon rose"><i class="ti ti-logout"></i></span><span>ログアウト</span></button>
+        </div>
 
-          <button onclick="switchPage('ship',document.getElementById('nav-ship'),'出庫登録','商品を送り出すとき')"
-            style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 8px;background:var(--purple-light);border:none;border-radius:var(--radius);cursor:pointer;-webkit-tap-highlight-color:transparent;font-family:inherit;">
-            <i class="ti ti-truck" style="font-size:28px;color:var(--purple);" aria-hidden="true"></i>
-            <span style="font-size:12px;font-weight:600;color:var(--purple-dark);">出庫登録</span>
-          </button>
-
-          <button onclick="switchPage('arrive',document.getElementById('nav-arrive'),'到着確認','届いた商品の受け取り');loadArrivingList()"
-            style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 8px;background:var(--green-light);border:none;border-radius:var(--radius);cursor:pointer;-webkit-tap-highlight-color:transparent;font-family:inherit;">
-            <i class="ti ti-package-import" style="font-size:28px;color:var(--green);" aria-hidden="true"></i>
-            <span style="font-size:12px;font-weight:600;color:#085041;">到着確認</span>
-          </button>
-
-          <button onclick="switchPage('check',document.getElementById('nav-check'),'品質評価','商品の状態を評価する');loadPendingEvals()"
-            style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 8px;background:#EEEDFE;border:none;border-radius:var(--radius);cursor:pointer;-webkit-tap-highlight-color:transparent;font-family:inherit;position:relative;">
-            <div style="position:relative;">
-              <i class="ti ti-star" style="font-size:28px;color:var(--purple);" aria-hidden="true"></i>
-              <div id="menu-eval-dot" style="width:8px;height:8px;background:#E24B4A;border-radius:50%;position:absolute;top:-2px;right:-2px;display:none;"></div>
-            </div>
-            <span style="font-size:12px;font-weight:600;color:var(--purple-dark);">品質評価</span>
-          </button>
-
-          <button onclick="switchPage('notif',document.getElementById('nav-notif'),'通知','評価結果の受信ボックス');clearNotif();loadNotifications()"
-            style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 8px;background:var(--orange-light);border:none;border-radius:var(--radius);cursor:pointer;-webkit-tap-highlight-color:transparent;font-family:inherit;position:relative;">
-            <div style="position:relative;">
-              <i class="ti ti-bell" style="font-size:28px;color:#854F0B;" aria-hidden="true"></i>
-              <div id="menu-notif-dot" style="width:8px;height:8px;background:#E24B4A;border-radius:50%;position:absolute;top:-2px;right:-2px;display:none;"></div>
-            </div>
-            <span style="font-size:12px;font-weight:600;color:#633806;">通知</span>
-          </button>
-
-          <button onclick="switchPage('move',document.getElementById('nav-move'),'移動履歴','商品の移動記録');loadMove('all')"
-            style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 8px;background:#E6F1FB;border:none;border-radius:var(--radius);cursor:pointer;-webkit-tap-highlight-color:transparent;font-family:inherit;">
-            <i class="ti ti-arrows-transfer-up" style="font-size:28px;color:#185FA5;" aria-hidden="true"></i>
-            <span style="font-size:12px;font-weight:600;color:#0C447C;">移動履歴</span>
-          </button>
-
-          <button onclick="switchPage('rank',document.getElementById('nav-rank'),'ランキング','営業所別スコア');loadRanking()"
-            style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 8px;background:var(--red-light);border:none;border-radius:var(--radius);cursor:pointer;-webkit-tap-highlight-color:transparent;font-family:inherit;">
-            <i class="ti ti-medal" style="font-size:28px;color:var(--red);" aria-hidden="true"></i>
-            <span style="font-size:12px;font-weight:600;color:var(--red);">ランキング</span>
-          </button>
-
-          <button onclick="switchPage('hist',document.getElementById('nav-hist'),'評価履歴','受けた評価の記録');switchHistTab('mine')"
-            style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 8px;background:#EEEDFE;border:none;border-radius:var(--radius);cursor:pointer;-webkit-tap-highlight-color:transparent;font-family:inherit;">
-            <i class="ti ti-history" style="font-size:28px;color:var(--purple);" aria-hidden="true"></i>
-            <span style="font-size:12px;font-weight:600;color:var(--purple-dark);">評価履歴</span>
-          </button>
-
-          <button onclick="switchPage('report',document.getElementById('nav-report'),'集計レポート','報告用データの抽出');loadReport()"
-            style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 8px;background:#E6F1FB;border:none;border-radius:var(--radius);cursor:pointer;-webkit-tap-highlight-color:transparent;font-family:inherit;">
-            <i class="ti ti-chart-bar" style="font-size:28px;color:#185FA5;" aria-hidden="true"></i>
-            <span style="font-size:12px;font-weight:600;color:#0C447C;">集計レポート</span>
-          </button>
-
-          <button onclick="switchPage('board',document.getElementById('nav-board'),'商品マッチング','欲しい商品をリクエスト');loadBoard()"
-            style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 8px;background:#EAF3DE;border:none;border-radius:var(--radius);cursor:pointer;-webkit-tap-highlight-color:transparent;font-family:inherit;grid-column:span 3;">
-            <i class="ti ti-layout-board" style="font-size:28px;color:#3B6D11;" aria-hidden="true"></i>
-            <span style="font-size:12px;font-weight:600;color:#27500A;">商品マッチング掲示板</span>
-          </button>
-
+        <div class="home-recent-wrap">
+          <div class="home-section-head" style="margin:0 0 4px;">
+            <div class="home-section-title">要注意の営業所</div>
+            <div class="home-section-note">最新状況</div>
+          </div>
+          <div id="recent-evals"><div class="loading">読み込み中...</div></div>
         </div>
       </div>
     </div>
@@ -403,107 +507,80 @@ textarea{min-height:72px;resize:none;}
       <div id="arriving-list"><div class="loading">読み込み中...</div></div>
     </div>
 
-    <!-- 品質評価（旧入庫チェック） -->
+    <!-- 品質評価：現場検品フロー -->
     <div class="page" id="pg-check" style="position:relative;">
       <div id="check-success" class="success-overlay">
         <i class="ti ti-circle-check" style="font-size:64px;color:var(--green);"></i>
         <div style="font-size:20px;font-weight:700;text-align:center;">評価送信完了！</div>
         <div style="font-size:14px;color:var(--text2);text-align:center;">Firestoreに保存しました</div>
         <div style="width:100%;margin-top:4px;">
-          <div class="flow-box" style="margin-bottom:8px;">
-            <i class="ti ti-database" style="font-size:22px;color:var(--purple);flex-shrink:0;"></i>
-            <div><div style="font-size:13px;font-weight:600;">Firebase Firestoreに保存</div><div style="font-size:12px;color:var(--text2);">全営業所からリアルタイムで確認可能</div></div>
-          </div>
-          <div class="flow-box">
-            <i class="ti ti-mail" style="font-size:22px;color:var(--green);flex-shrink:0;"></i>
-            <div><div style="font-size:13px;font-weight:600;">所長へメール通知</div><div style="font-size:12px;color:var(--text2);" id="notif-to-mail">送り元の所長に詳細レポートを送信</div></div>
-          </div>
+          <div class="flow-box" style="margin-bottom:8px;"><i class="ti ti-database" style="font-size:22px;color:var(--purple);flex-shrink:0;"></i><div><div style="font-size:13px;font-weight:600;">Firebase Firestoreに保存</div><div style="font-size:12px;color:var(--text2);">全営業所からリアルタイムで確認可能</div></div></div>
+          <div class="flow-box"><i class="ti ti-mail" style="font-size:22px;color:var(--green);flex-shrink:0;"></i><div><div style="font-size:13px;font-weight:600;">所長へメール通知</div><div style="font-size:12px;color:var(--text2);" id="notif-to-mail">送り元の所長に詳細レポートを送信</div></div></div>
         </div>
         <button class="primary-btn" style="margin-top:8px;margin-bottom:0;" onclick="resetCheck()">続けて入力する</button>
       </div>
 
-      <!-- 未評価リスト -->
+      <div class="inspection-hero">
+        <div class="inspection-kicker">FIELD INSPECTION</div>
+        <div class="inspection-title">写真を残して、順番に点検</div>
+        <div class="inspection-copy">商品情報 → 写真 → 状態評価 → 最終判定の順で進みます。現場で迷わない1画面1作業型です。</div>
+      </div>
+
+      <div class="stepper">
+        <button class="step-chip active" onclick="jumpInspection('step-basic',this)">1 商品</button>
+        <button class="step-chip" onclick="jumpInspection('step-photo',this)">2 写真</button>
+        <button class="step-chip" onclick="jumpInspection('step-eval',this)">3 点検</button>
+        <button class="step-chip" onclick="jumpInspection('step-decision',this)">4 判定</button>
+      </div>
+
       <div id="pending-evals-section">
         <div style="font-size:13px;font-weight:600;color:var(--red);margin-bottom:8px;" id="pending-evals-title"></div>
         <div id="pending-evals-list"></div>
-        <div style="border-top:0.5px solid var(--border2);margin:14px 0;"></div>
       </div>
 
-      <div class="section-label">基本情報</div>
-      <div class="card">
-        <div class="field-group"><div class="field-label">送り元営業所</div>
-          <select id="check-from">
-            <option value="">-- 選択 --</option>
-            <option>札幌営業所</option><option>盛岡営業所</option><option>仙台営業所</option>
-            <option>いわき営業所</option><option>北関東営業所</option><option>新潟営業所</option>
-            <option>埼玉営業所</option><option>東関東営業所</option><option>東京営業所</option>
-            <option>西関東営業所</option><option>麻布営業所</option><option>南関東営業所</option>
-            <option>静岡営業所</option><option>名古屋営業所</option><option>滋賀営業所</option>
-            <option>関西営業所</option><option>兵庫営業所</option><option>広島営業所</option>
-            <option>四国営業所</option><option>福岡営業所</option><option>南九州営業所</option>
-            <option>SOKOPLUSいわき</option><option>SOKO PLUS千葉</option>
-            <option>SOKO PLUS奈良</option><option>SOKO PLUS岡山</option>
-          </select>
+      <section class="inspection-panel" id="step-basic">
+        <div class="inspection-panel-head"><div class="step-no">1</div><div><div class="inspection-panel-title">商品を特定</div><div class="inspection-panel-sub">送り元と商品番号を確認します</div></div></div>
+        <div class="card">
+          <div class="field-group"><div class="field-label">送り元営業所</div><select id="check-from"><option value="">-- 選択 --</option><option>札幌営業所</option><option>盛岡営業所</option><option>仙台営業所</option><option>いわき営業所</option><option>北関東営業所</option><option>新潟営業所</option><option>埼玉営業所</option><option>東関東営業所</option><option>東京営業所</option><option>西関東営業所</option><option>麻布営業所</option><option>南関東営業所</option><option>静岡営業所</option><option>名古屋営業所</option><option>滋賀営業所</option><option>関西営業所</option><option>兵庫営業所</option><option>広島営業所</option><option>四国営業所</option><option>福岡営業所</option><option>南九州営業所</option><option>SOKOPLUSいわき</option><option>SOKO PLUS千葉</option><option>SOKO PLUS奈良</option><option>SOKO PLUS岡山</option></select></div>
+          <div class="field-group"><div class="field-label">カテゴリ</div><select id="check-cat"><option>家具</option><option>家電</option><option>イベント用品</option><option>その他</option></select></div>
+          <div class="field-group"><div class="field-label">商品名 / 管理番号</div><input type="text" id="check-item" placeholder="例：冷蔵庫 80L  #A-042"></div>
         </div>
-        <div class="field-group"><div class="field-label">カテゴリ</div>
-          <select id="check-cat"><option>家具</option><option>家電</option><option>イベント用品</option><option>その他</option></select>
-        </div>
-        <div class="field-group"><div class="field-label">商品名 / 管理番号</div>
-          <input type="text" id="check-item" placeholder="例：冷蔵庫 80L  #A-042">
-        </div>
-      </div>
+      </section>
 
-      <div class="section-label">評価（タップして採点）</div>
-      <div class="card">
-        <div class="eval-item">
-          <div class="eval-name"><i class="ti ti-sparkles" style="font-size:15px;vertical-align:-2px;margin-right:5px;"></i>清潔感・クリーニング</div>
-          <div class="eval-hint">汚れ・臭い・クリーニングの丁寧さ</div>
-          <div class="star-row" data-key="c1"></div>
-        </div>
-        <div class="eval-item">
-          <div class="eval-name"><i class="ti ti-eye" style="font-size:15px;vertical-align:-2px;margin-right:5px;"></i>外観・傷・汚れ</div>
-          <div class="eval-hint">目に見える傷・凹み・変色など</div>
-          <div class="star-row" data-key="c2"></div>
-        </div>
-        <div class="eval-item">
-          <div class="eval-name"><i class="ti ti-package" style="font-size:15px;vertical-align:-2px;margin-right:5px;"></i>付属品・部品の完備</div>
-          <div class="eval-hint">リモコン・ケーブル・取説など</div>
-          <div class="star-row" data-key="c3"></div>
-        </div>
-        <div class="eval-item">
-          <div class="eval-name"><i class="ti ti-box" style="font-size:15px;vertical-align:-2px;margin-right:5px;"></i>梱包・養生の状態</div>
-          <div class="eval-hint">輸送中の保護・梱包の丁寧さ</div>
-          <div class="star-row" data-key="c4"></div>
-        </div>
-      </div>
+      <section class="inspection-panel" id="step-photo">
+        <div class="inspection-panel-head"><div class="step-no">2</div><div><div class="inspection-panel-title">証拠写真を撮影</div><div class="inspection-panel-sub">外観と不良箇所が分かる写真を残します</div></div></div>
+        <div id="photo-grid" class="photo-grid"></div>
+        <input type="file" id="camera-input" accept="image/*" capture="environment" style="display:none;" onchange="handlePhoto(event)">
+        <div class="photo-command" onclick="document.getElementById('camera-input').click()"><i class="ti ti-camera-plus"></i><strong>タップして撮影</strong><small>端末内の写真も選択できます</small></div>
+        <div class="photo-guide"><span>正面</span><span>側面</span><span>背面</span><span>不良箇所</span></div>
+      </section>
 
-      <div class="score-bar" id="score-bar">
-        <div><div class="score-stars" id="score-stars"></div><div class="score-label">総合スコア</div></div>
-        <div class="score-num" id="score-num"></div>
-        <div id="score-badge"></div>
-      </div>
-
-      <div class="section-label">フラグ（複数選択可）</div>
-      <div class="card">
-        <div class="flags">
-          <button class="flag-btn" onclick="toggleFlag(this)"><i class="ti ti-package-off"></i>付属品欠品</button>
-          <button class="flag-btn" onclick="toggleFlag(this)"><i class="ti ti-tool"></i>要修理</button>
-          <button class="flag-btn" onclick="toggleFlag(this)"><i class="ti ti-phone-outgoing"></i>要連絡</button>
-          <button class="flag-btn" onclick="toggleFlag(this)"><i class="ti ti-alert-triangle"></i>緊急対応</button>
+      <section class="inspection-panel" id="step-eval">
+        <div class="inspection-panel-head"><div class="step-no">3</div><div><div class="inspection-panel-title">状態を点検</div><div class="inspection-panel-sub">星をタップして4項目を評価します</div></div></div>
+        <div class="card">
+          <div class="eval-item"><div class="eval-name"><i class="ti ti-sparkles"></i> 清潔感・クリーニング</div><div class="eval-hint">汚れ・臭い・クリーニングの丁寧さ</div><div class="star-row" data-key="c1"></div></div>
+          <div class="eval-item"><div class="eval-name"><i class="ti ti-eye"></i> 外観・傷・汚れ</div><div class="eval-hint">目に見える傷・凹み・変色など</div><div class="star-row" data-key="c2"></div></div>
+          <div class="eval-item"><div class="eval-name"><i class="ti ti-package"></i> 付属品・部品の完備</div><div class="eval-hint">リモコン・ケーブル・取説など</div><div class="star-row" data-key="c3"></div></div>
+          <div class="eval-item"><div class="eval-name"><i class="ti ti-box"></i> 梱包・養生の状態</div><div class="eval-hint">輸送中の保護・梱包の丁寧さ</div><div class="star-row" data-key="c4"></div></div>
         </div>
-      </div>
+        <div class="score-bar" id="score-bar"><div><div class="score-stars" id="score-stars"></div><div class="score-label">総合スコア</div></div><div class="score-num" id="score-num"></div><div id="score-badge"></div></div>
+        <div style="font-size:12px;font-weight:800;color:#675b50;margin:14px 0 8px;">該当する問題</div>
+        <div class="flags"><button class="flag-btn" onclick="toggleFlag(this)"><i class="ti ti-package-off"></i>付属品欠品</button><button class="flag-btn" onclick="toggleFlag(this)"><i class="ti ti-tool"></i>要修理</button><button class="flag-btn" onclick="toggleFlag(this)"><i class="ti ti-phone-outgoing"></i>要連絡</button><button class="flag-btn" onclick="toggleFlag(this)"><i class="ti ti-alert-triangle"></i>緊急対応</button></div>
+      </section>
 
-      <div class="section-label">写真</div>
-      <div id="photo-grid" class="photo-grid"></div>
-      <input type="file" id="camera-input" accept="image/*" capture="environment" style="display:none;" onchange="handlePhoto(event)">
-      <div class="camera-area" onclick="document.getElementById('camera-input').click()">
-        <i class="ti ti-camera"></i>
-        <span>タップして撮影 / 画像を選択</span>
-      </div>
+      <section class="inspection-panel" id="step-decision">
+        <div class="inspection-panel-head"><div class="step-no">4</div><div><div class="inspection-panel-title">最終判定</div><div class="inspection-panel-sub">現場スタッフが最終結果を確定します</div></div></div>
+        <div class="decision-grid">
+          <button class="decision-btn" data-decision="出荷可能" onclick="setFinalDecision(this)"><i class="ti ti-circle-check"></i><span><strong>出荷可能</strong><small>そのまま次の出荷に使用できます</small></span></button>
+          <button class="decision-btn" data-decision="要メンテナンス" onclick="setFinalDecision(this)"><i class="ti ti-tool"></i><span><strong>要メンテナンス</strong><small>清掃・修理・部品補充が必要です</small></span></button>
+          <button class="decision-btn" data-decision="出荷不可" onclick="setFinalDecision(this)"><i class="ti ti-ban"></i><span><strong>出荷不可</strong><small>廃棄または責任者判断が必要です</small></span></button>
+        </div>
+        <div style="font-size:12px;font-weight:800;color:#675b50;margin:14px 0 7px;">判定理由・メモ</div>
+        <textarea id="check-comment" placeholder="傷の位置、異音、必要な修理内容など"></textarea>
+      </section>
 
-      <div class="section-label">コメント（任意）</div>
-      <div class="card"><textarea id="check-comment" placeholder="気になった点・状態メモなど"></textarea></div>
-      <button class="primary-btn" id="submit-btn" onclick="doSubmit()">評価を送信する</button>
+      <button class="primary-btn inspection-submit" id="submit-btn" onclick="doSubmit()"><i class="ti ti-send" style="font-size:18px;vertical-align:-3px;margin-right:6px;"></i>点検結果を確定・送信</button>
+      <div class="inspection-note">送信後、送り元営業所へ結果が共有されます</div>
       <div style="height:8px;"></div>
     </div>
 
@@ -810,7 +887,7 @@ textarea{min-height:72px;resize:none;}
   </div>
 
   <div class="bottomnav" style="justify-content:center;">
-    <button class="nav-btn active" id="nav-home" onclick="switchPage('home',this,'ダッシュボード','');loadDashboard()" style="flex:0 0 auto;padding:4px 32px;"><i class="ti ti-layout-dashboard"></i>ホーム</button>
+    <button class="nav-btn active" id="nav-home" onclick="switchPage('home',this,'ホーム','今日の業務');loadDashboard()" style="flex:0 0 auto;padding:4px 32px;"><i class="ti ti-layout-dashboard"></i>ホーム</button>
     <button class="nav-btn" id="nav-ship" style="display:none;"></button>
     <button class="nav-btn" id="nav-arrive" style="display:none;"></button>
     <button class="nav-btn" id="nav-check" style="display:none;"></button>
@@ -2312,7 +2389,65 @@ function exportReportPDF(){
   .num{text-align:right;}
   .loading{color:#999;font-size:12px;}
   @media print{button{display:none;}}
-  </style></head><body>
+  
+
+/* Home redesign v5 — operations cockpit */
+#pg-home{margin:-12px -16px 0;padding:0 0 24px;background:#f2f0eb;min-height:calc(100vh - 120px);}
+.home-hero{position:relative;overflow:hidden;background:linear-gradient(145deg,#181612 0%,#2b261f 56%,#3e3429 100%);color:#fff;padding:24px 20px 22px;border-radius:0 0 28px 28px;box-shadow:0 18px 35px rgba(42,34,25,.18);}
+.home-hero:before{content:"";position:absolute;width:220px;height:220px;border-radius:50%;right:-95px;top:-110px;background:radial-gradient(circle,rgba(225,151,64,.35),rgba(225,151,64,0) 68%);}
+.home-hero:after{content:"";position:absolute;width:150px;height:150px;border:1px solid rgba(255,255,255,.1);border-radius:50%;right:-30px;bottom:-85px;}
+.home-hero-top{position:relative;z-index:1;display:flex;justify-content:space-between;align-items:flex-start;gap:16px;}
+.home-eyebrow{font-size:11px;letter-spacing:1.8px;color:#d9c5ae;font-weight:700;text-transform:uppercase;margin-bottom:8px;}
+.home-greeting{font-size:23px;font-weight:750;letter-spacing:-.5px;line-height:1.25;}
+.home-office{font-size:12px;color:#c6b9aa;margin-top:6px;}
+.home-logo-mark{width:52px;height:52px;border-radius:17px;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);}
+.home-logo-mark i{font-size:27px;color:#f1b15f;}
+.home-focus{position:relative;z-index:1;margin-top:22px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:14px;display:flex;align-items:center;gap:13px;cursor:pointer;backdrop-filter:blur(10px);}
+.home-focus-icon{width:43px;height:43px;border-radius:14px;background:#f1b15f;color:#1f1b16;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.home-focus-icon i{font-size:23px;}
+.home-focus-copy{flex:1;min-width:0;}
+.home-focus-label{font-size:10px;letter-spacing:1.2px;color:#d9c5ae;font-weight:700;margin-bottom:3px;}
+.home-focus-title{font-size:15px;font-weight:700;}
+.home-focus-sub{font-size:11px;color:#c8baaa;margin-top:3px;}
+.home-focus-arrow{font-size:21px;color:#f1b15f;}
+.home-body{padding:18px 16px 0;}
+.home-section-head{display:flex;align-items:end;justify-content:space-between;margin:4px 2px 10px;}
+.home-section-title{font-size:15px;font-weight:750;color:#29241e;letter-spacing:-.2px;}
+.home-section-note{font-size:10px;color:#8a8177;}
+.home-actions{display:grid;grid-template-columns:1.15fr .85fr;grid-template-rows:118px 96px;gap:10px;}
+.home-action{border:none;border-radius:21px;padding:15px;text-align:left;cursor:pointer;font-family:inherit;position:relative;overflow:hidden;box-shadow:0 8px 20px rgba(43,35,27,.08);-webkit-tap-highlight-color:transparent;}
+.home-action:active{transform:scale(.985);}
+.home-action.primary{grid-row:span 2;background:linear-gradient(155deg,#e7a146,#c97626);color:#fff;}
+.home-action.dark{background:#25221e;color:#fff;}
+.home-action.light{background:#fff;color:#29241e;border:1px solid #e7e1d9;}
+.home-action .action-icon{width:42px;height:42px;border-radius:14px;display:flex;align-items:center;justify-content:center;margin-bottom:18px;background:rgba(255,255,255,.18);}
+.home-action.light .action-icon{background:#eee8df;color:#8b5a25;}
+.home-action.dark .action-icon{background:rgba(255,255,255,.1);color:#f1b15f;}
+.home-action i{font-size:24px;}
+.home-action-title{font-size:16px;font-weight:760;line-height:1.2;}
+.home-action-sub{font-size:11px;line-height:1.45;margin-top:5px;opacity:.78;}
+.home-action .action-arrow{position:absolute;right:14px;bottom:13px;font-size:20px;opacity:.8;}
+.home-action.primary:after{content:"";position:absolute;width:110px;height:110px;border-radius:50%;background:rgba(255,255,255,.13);right:-45px;top:-35px;}
+.home-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:18px;}
+.home-kpi{background:#fff;border:1px solid #e7e1d9;border-radius:17px;padding:13px 10px;min-height:83px;box-shadow:0 5px 15px rgba(43,35,27,.05);cursor:pointer;}
+.home-kpi-value{font-size:23px;font-weight:780;color:#29241e;line-height:1;}
+.home-kpi-value.good{color:#16745b;}.home-kpi-value.warn{color:#b05f1d;}
+.home-kpi-label{font-size:10px;line-height:1.3;color:#81786e;margin-top:7px;}
+.home-pending{display:none;margin-top:16px;background:#30241d;color:#fff;border-radius:19px;padding:14px 15px;cursor:pointer;box-shadow:0 8px 18px rgba(48,36,29,.14);}
+.home-pending-row{display:flex;align-items:center;gap:12px;}
+.home-pending-icon{width:42px;height:42px;border-radius:14px;background:#d86844;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.home-pending-icon i{font-size:23px;}
+.home-pending-title{font-size:14px;font-weight:730;}.home-pending-sub{font-size:11px;color:#d9ccc3;margin-top:3px;}
+.home-recent-wrap{margin-top:18px;background:#fff;border:1px solid #e7e1d9;border-radius:21px;padding:14px;box-shadow:0 6px 18px rgba(43,35,27,.05);}
+.home-recent-wrap #recent-evals .hist-item,.home-recent-wrap #recent-evals .rank-item{border:none;border-top:1px solid #eee9e2;border-radius:0;margin:0;padding:12px 2px;background:transparent;}
+.home-recent-wrap #recent-evals > :first-child{border-top:none;}
+.home-tools{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px;}
+.home-tool{border:none;background:transparent;padding:7px 2px;display:flex;flex-direction:column;align-items:center;gap:6px;font-family:inherit;color:#5e554d;cursor:pointer;font-size:10px;}
+.home-tool-icon{width:45px;height:45px;border-radius:15px;background:#e6e0d8;display:flex;align-items:center;justify-content:center;color:#5f5144;position:relative;}
+.home-tool-icon i{font-size:22px;}.home-tool-icon.blue{background:#dde8ef;color:#315c78}.home-tool-icon.green{background:#dfe9df;color:#38613b}.home-tool-icon.rose{background:#efdfdc;color:#88473c}.home-tool-icon.gold{background:#f1e5d4;color:#925f22}
+.home-mini-dot{width:8px;height:8px;background:#d84e42;border-radius:50%;position:absolute;right:4px;top:3px;display:none;border:2px solid #f2f0eb;box-sizing:content-box;}
+
+</style></head><body>
   <h1>SARKLAND 品質管理レポート</h1>
   <div class="meta">作成日：${now}　作成者：${currentName}（${currentOffice}）</div>
   <h2>月別 移動数</h2>${moveTable}
@@ -2386,6 +2521,7 @@ async function saveEditEval(){
       scores:{clean:editScores.clean,looks:editScores.looks,parts:editScores.parts,pack:editScores.pack},
       totalScore:parseFloat(totalScore.toFixed(2)),
       flags,
+      finalDecision,
       comment,
       editedAt:window.fsServerTimestamp(),
       editedBy:currentName,
@@ -2404,6 +2540,18 @@ async function deleteEval(id,itemName){
     showToast('🗑 評価を削除しました');
     loadHistory();
   }catch(e){showToast('削除に失敗しました');console.error(e);}
+}
+
+// 現場検品フロー
+let finalDecision='';
+function jumpInspection(id,btn){
+  document.getElementById(id).scrollIntoView({behavior:'smooth',block:'start'});
+  document.querySelectorAll('.step-chip').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+function setFinalDecision(btn){
+  finalDecision=btn.dataset.decision;
+  document.querySelectorAll('.decision-btn').forEach(b=>b.classList.toggle('active',b===btn));
 }
 
 // 星評価
@@ -2529,6 +2677,7 @@ async function doSubmit(){
   let allScored=true;
   rows.forEach(r=>{if(!r.dataset.score)allScored=false;});
   if(!allScored){showToast('全項目を採点してください');return;}
+  if(!finalDecision){showToast('最終判定を選択してください');document.getElementById('step-decision').scrollIntoView({behavior:'smooth'});return;}
 
   const scores={
     clean:parseInt(document.querySelector('[data-key="c1"]').dataset.score),
@@ -2580,7 +2729,7 @@ async function doSubmit(){
     showToast('送信に失敗しました。もう一度お試しください。');
     console.error(e);
   }
-  btn.disabled=false; btn.textContent='評価を送信する';
+  btn.disabled=false; btn.innerHTML='<i class="ti ti-send" style="font-size:18px;vertical-align:-3px;margin-right:6px;"></i>点検結果を確定・送信';
 }
 
 function resetCheck(){
@@ -2590,6 +2739,8 @@ function resetCheck(){
     r.querySelectorAll('.star').forEach(s=>s.classList.remove('on'));
   });
   document.querySelectorAll('.flag-btn').forEach(b=>b.classList.remove('active'));
+  finalDecision='';
+  document.querySelectorAll('.decision-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('score-bar').style.display='none';
   document.getElementById('check-from').value='';
   document.getElementById('check-item').value='';

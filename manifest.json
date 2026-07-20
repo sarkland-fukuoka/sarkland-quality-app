@@ -5,7 +5,7 @@
   "start_url": "/sarkland-quality-app/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#534AB7",
+  "theme_color": "#2e261f",
   "orientation": "portrait",
   "icons": [
     {
